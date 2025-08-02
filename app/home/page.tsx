@@ -1,9 +1,9 @@
 "use client";
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, RefObject } from 'react';
 import { ChevronDown, Github, Linkedin, Mail, ExternalLink, Code, Palette, Zap, Users, Award, MapPin, Terminal, Database, Cloud, Smartphone, Globe, Shield, ArrowRight, Play, Coffee, Clock, Star, CheckCircle } from 'lucide-react';
 
 export default function EnhancedFloatingPortfolio() {
-  const canvasRef = useRef(null);
+  const canvasRef: RefObject<HTMLCanvasElement> = useRef(null);
   const [activeSection, setActiveSection] = useState('home');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -22,7 +22,6 @@ export default function EnhancedFloatingPortfolio() {
     setIsLoaded(true);
     let timeout;
     const currentRole = roles[currentRoleIndex];
-
     if (typedText.length < currentRole.length) {
       timeout = setTimeout(() => {
         setTypedText(currentRole.slice(0, typedText.length + 1));
@@ -41,9 +40,10 @@ export default function EnhancedFloatingPortfolio() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    let animationId;
+    if (!ctx) return;
 
-    const particles = [];
+    let animationId: number;
+    const particles: Particle[] = [];
     const particleCount = 150;
 
     const resizeCanvas = () => {
@@ -55,6 +55,16 @@ export default function EnhancedFloatingPortfolio() {
     window.addEventListener('resize', resizeCanvas);
 
     class Particle {
+      x: number;
+      y: number;
+      size: number;
+      speedX: number;
+      speedY: number;
+      opacity: number;
+      hue: number;
+      pulse: number;
+      floatOffset: number;
+
       constructor() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
@@ -72,10 +82,8 @@ export default function EnhancedFloatingPortfolio() {
         this.y += this.speedY;
         this.pulse += 0.03;
         this.floatOffset += 0.015;
-
         if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
         if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
-
         this.y += Math.sin(this.pulse) * 0.5;
         this.x += Math.cos(this.floatOffset) * 0.3;
         this.opacity = 0.4 + Math.sin(this.pulse) * 0.3;
@@ -100,19 +108,16 @@ export default function EnhancedFloatingPortfolio() {
     const animate = () => {
       ctx.fillStyle = 'rgba(15, 23, 42, 0.04)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-
       particles.forEach(particle => {
         particle.update();
         particle.draw();
       });
 
-      // Enhanced connection lines with floating effect
       particles.forEach((particle, i) => {
         particles.slice(i + 1).forEach(otherParticle => {
           const dx = particle.x - otherParticle.x;
           const dy = particle.y - otherParticle.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
-
           if (distance < 140) {
             ctx.beginPath();
             ctx.moveTo(particle.x, particle.y);
@@ -154,17 +159,16 @@ export default function EnhancedFloatingPortfolio() {
       });
     }, observerOptions);
 
-    // Observe all sections and floating elements
     const sections = document.querySelectorAll('section[id]');
     const floatingElements = document.querySelectorAll('.float-on-scroll');
-    
+
     sections.forEach((section) => observer.observe(section));
     floatingElements.forEach((element) => observer.observe(element));
 
     return () => observer.disconnect();
   }, []);
 
-  const scrollToSection = (sectionId) => {
+  const scrollToSection = (sectionId: string) => {
     document.getElementById(sectionId)?.scrollIntoView({
       behavior: 'smooth'
     });
@@ -331,7 +335,6 @@ export default function EnhancedFloatingPortfolio() {
         className="fixed inset-0 z-0 pointer-events-none"
         style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)' }}
       />
-
       {/* Professional Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-xl border-b border-slate-700/50 animate-float-gentle">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -345,7 +348,6 @@ export default function EnhancedFloatingPortfolio() {
                 <div className="text-xs text-slate-400">Full-Stack Developer</div>
               </div>
             </div>
-
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-1 animate-float-right">
               {['home', 'about', 'experience', 'skills', 'projects', 'testimonials', 'contact'].map((section, index) => (
@@ -363,7 +365,6 @@ export default function EnhancedFloatingPortfolio() {
                 </button>
               ))}
             </div>
-
             {/* Mobile Menu Button */}
             <button
               className="md:hidden p-2 rounded-lg hover:bg-slate-700/50 transition-colors animate-float-right"
@@ -376,7 +377,6 @@ export default function EnhancedFloatingPortfolio() {
               </div>
             </button>
           </div>
-
           {/* Mobile Navigation */}
           {isMenuOpen && (
             <div className="md:hidden mt-4 pb-4 border-t border-slate-700/50 animate-slide-down">
@@ -396,7 +396,6 @@ export default function EnhancedFloatingPortfolio() {
           )}
         </div>
       </nav>
-
       {/* Enhanced Hero Section */}
       <section id="home" className="min-h-screen flex items-center justify-center relative z-10 px-6">
         <div className={`max-w-7xl mx-auto text-center transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
@@ -404,14 +403,12 @@ export default function EnhancedFloatingPortfolio() {
             <div className="inline-flex items-center px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full text-blue-400 text-sm font-medium mb-6 animate-float-gentle">
               <span className="animate-pulse-glow">✨ Available for exciting projects</span>
             </div>
-
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 leading-tight tracking-tight">
               <span className="block text-white animate-float-up">Hi, I'm</span>
               <span className="block bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent animate-float-up-delayed">
                 Shayan Ali
               </span>
             </h1>
-
             <div className="text-2xl md:text-3xl text-slate-300 mb-8 h-12 animate-float-gentle">
               <span className="text-slate-400">I'm a </span>
               <span className="text-blue-400 font-semibold">
@@ -419,13 +416,11 @@ export default function EnhancedFloatingPortfolio() {
                 <span className="animate-pulse">|</span>
               </span>
             </div>
-
             <p className="text-lg md:text-xl text-slate-400 mb-12 max-w-3xl mx-auto leading-relaxed animate-float-in-delayed">
               Crafting exceptional digital experiences with cutting-edge technology.
               Specialized in building scalable applications, secure systems, and intuitive user interfaces
               that drive business growth and user satisfaction.
             </p>
-
             <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16 animate-float-buttons">
               <button
                 onClick={() => scrollToSection('projects')}
@@ -447,7 +442,6 @@ export default function EnhancedFloatingPortfolio() {
                 </span>
               </button>
             </div>
-
             {/* Quick Stats */}
             <div className="grid grid-cols-3 gap-8 max-w-md mx-auto mb-12 animate-float-stats">
               <div className="text-center animate-float-stat-1">
@@ -463,20 +457,17 @@ export default function EnhancedFloatingPortfolio() {
                 <div className="text-slate-500 text-sm">Satisfaction</div>
               </div>
             </div>
-
             <div className="animate-bounce-enhanced">
               <ChevronDown className="w-6 h-6 mx-auto text-slate-500" />
             </div>
           </div>
         </div>
-
         {/* Enhanced Floating Elements */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute top-1/4 left-10 w-2 h-2 bg-blue-500 rounded-full opacity-60 animate-float-particle-1" />
           <div className="absolute top-1/3 right-20 w-3 h-3 bg-purple-500 rounded-full opacity-40 animate-float-particle-2" />
           <div className="absolute bottom-1/3 left-1/4 w-1.5 h-1.5 bg-pink-500 rounded-full opacity-50 animate-float-particle-3" />
           <div className="absolute top-1/2 right-1/4 w-2.5 h-2.5 bg-cyan-500 rounded-full opacity-30 animate-float-particle-4" />
-
           {/* Code-like floating elements */}
           <div className="absolute top-20 left-1/4 text-blue-400/20 text-xs font-mono rotate-12 select-none animate-float-code-1">
             const developer = 'passionate'
@@ -486,7 +477,6 @@ export default function EnhancedFloatingPortfolio() {
           </div>
         </div>
       </section>
-
       {/* Enhanced About Section */}
       <section id="about" className="py-32 px-6 relative z-10 float-on-scroll">
         <div className="max-w-7xl mx-auto">
@@ -498,19 +488,16 @@ export default function EnhancedFloatingPortfolio() {
                 </h2>
                 <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mb-8 animate-expand"></div>
               </div>
-
               <p className="text-lg text-slate-300 leading-relaxed animate-float-text-1">
                 I'm a passionate full-stack developer with over 1 years of experience building
                 innovative digital solutions. My expertise spans modern web technologies,
                 cybersecurity, cloud architecture, and user experience design.
               </p>
-
               <p className="text-lg text-slate-300 leading-relaxed animate-float-text-2">
                 I believe in writing clean, maintainable code and creating systems that scale.
                 Whether it's architecting microservices, implementing security protocols, or
                 crafting intuitive user interfaces, I bring a holistic approach to every project.
               </p>
-
               {/* Professional Highlights */}
               <div className="grid grid-cols-2 gap-6 animate-float-highlights">
                 {[
@@ -529,7 +516,6 @@ export default function EnhancedFloatingPortfolio() {
                   </div>
                 ))}
               </div>
-
               {/* Location & Contact */}
               <div className="flex items-center gap-4 text-slate-400 animate-float-location">
                 <MapPin className="w-5 h-5 text-blue-400 animate-bounce-gentle" />
@@ -537,7 +523,6 @@ export default function EnhancedFloatingPortfolio() {
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                 <span className="text-green-400">Available for remote work</span>
               </div>
-
               {/* Tech Stack Pills */}
               <div className="flex flex-wrap gap-3 animate-float-tech">
                 {['React', 'Next.js', 'TypeScript', 'Node.js', 'Python', 'AWS', 'Docker', 'PostgreSQL', 'CyberSecurity'].map((tech, index) => (
@@ -551,7 +536,7 @@ export default function EnhancedFloatingPortfolio() {
                 ))}
               </div>
             </div>
-            
+
             <div className="relative animate-float-right">
               <div className="relative w-full h-[600px] bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-3xl backdrop-blur-sm border border-slate-700/50 overflow-hidden group animate-float-image">
                 <img
@@ -560,7 +545,6 @@ export default function EnhancedFloatingPortfolio() {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
-
                 {/* Professional Badge */}
                 <div className="absolute bottom-6 left-6 right-6 animate-float-badge">
                   <div className="bg-slate-900/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-4">
@@ -577,7 +561,6 @@ export default function EnhancedFloatingPortfolio() {
                   </div>
                 </div>
               </div>
-
               {/* Floating Achievement Badges */}
               <div className="absolute -top-6 -right-6 bg-gradient-to-r from-green-500 to-emerald-500 p-4 rounded-2xl shadow-2xl shadow-green-500/25 animate-float-badge-1">
                 <Award className="w-8 h-8 text-white" />
@@ -589,7 +572,6 @@ export default function EnhancedFloatingPortfolio() {
           </div>
         </div>
       </section>
-
       {/* Experience Section */}
       <section id="experience" className="py-32 px-6 relative z-10 bg-slate-800/20 float-on-scroll">
         <div className="max-w-7xl mx-auto">
@@ -618,11 +600,9 @@ export default function EnhancedFloatingPortfolio() {
                       </div>
                     </div>
                   </div>
-
                   <div className="lg:w-2/3">
                     <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-8 hover:border-slate-600/70 transition-all duration-300 animate-float-card-delayed">
                       <p className="text-slate-300 leading-relaxed mb-6">{exp.description}</p>
-
                       <div className="space-y-3">
                         <h4 className="text-white font-semibold mb-4">Key Achievements:</h4>
                         {exp.achievements.map((achievement, i) => (
@@ -635,7 +615,6 @@ export default function EnhancedFloatingPortfolio() {
                     </div>
                   </div>
                 </div>
-
                 {index < experience.length - 1 && (
                   <div className="hidden lg:block absolute left-[16.66%] top-full w-px h-12 bg-gradient-to-b from-blue-500/50 to-transparent animate-expand-vertical"></div>
                 )}
@@ -644,7 +623,6 @@ export default function EnhancedFloatingPortfolio() {
           </div>
         </div>
       </section>
-
       {/* Skills Section */}
       <section id="skills" className="py-32 px-6 relative z-10 float-on-scroll">
         <div className="max-w-7xl mx-auto">
@@ -657,7 +635,6 @@ export default function EnhancedFloatingPortfolio() {
               Comprehensive skill set developed through years of professional experience and continuous learning
             </p>
           </div>
-
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {skills.map((skill, index) => {
               const Icon = skill.icon;
@@ -673,7 +650,6 @@ export default function EnhancedFloatingPortfolio() {
                     </div>
                     <h3 className="text-2xl font-bold">{skill.category}</h3>
                   </div>
-
                   <div className="mb-6">
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-slate-400">Proficiency</span>
@@ -686,7 +662,6 @@ export default function EnhancedFloatingPortfolio() {
                       />
                     </div>
                   </div>
-
                   <div className="flex flex-wrap gap-2">
                     {skill.technologies.map((tech, techIndex) => (
                       <span
@@ -704,7 +679,6 @@ export default function EnhancedFloatingPortfolio() {
           </div>
         </div>
       </section>
-
       {/* Projects Section */}
       <section id="projects" className="py-32 px-6 relative z-10 float-on-scroll">
         <div className="max-w-7xl mx-auto">
@@ -717,7 +691,6 @@ export default function EnhancedFloatingPortfolio() {
               Showcasing my best work across various industries and technologies
             </p>
           </div>
-
           <div className="grid gap-8">
             {projects.map((project, index) => (
               <div
@@ -734,7 +707,6 @@ export default function EnhancedFloatingPortfolio() {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/30 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-300" />
-
                   {/* Project Links Overlay */}
                   <div className="absolute inset-0 flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <a
@@ -751,14 +723,12 @@ export default function EnhancedFloatingPortfolio() {
                       <Github className="w-5 h-5 text-white" />
                     </a>
                   </div>
-
                   {project.featured && (
                     <div className="absolute top-4 right-4 px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-xs font-semibold animate-pulse-glow">
                       Featured
                     </div>
                   )}
                 </div>
-
                 <div className="p-8">
                   <h3 className="text-2xl font-bold mb-4 group-hover:text-blue-400 transition-colors animate-float-title">
                     {project.title}
@@ -766,7 +736,6 @@ export default function EnhancedFloatingPortfolio() {
                   <p className="text-slate-300 mb-6 leading-relaxed animate-float-text-delayed">
                     {project.description}
                   </p>
-
                   <div className="flex flex-wrap gap-2 mb-6 animate-float-tags">
                     {project.technologies.map((tech, techIndex) => (
                       <span
@@ -778,7 +747,6 @@ export default function EnhancedFloatingPortfolio() {
                       </span>
                     ))}
                   </div>
-
                   {project.metrics && (
                     <div className="grid grid-cols-3 gap-4 mb-6 animate-float-metrics">
                       {Object.entries(project.metrics).map(([key, value], metricIndex) => (
@@ -793,7 +761,6 @@ export default function EnhancedFloatingPortfolio() {
                       ))}
                     </div>
                   )}
-
                   <div className="flex gap-4 animate-float-links">
                     <a
                       href={project.liveUrl}
@@ -815,7 +782,6 @@ export default function EnhancedFloatingPortfolio() {
           </div>
         </div>
       </section>
-
       {/* Testimonials Section */}
       <section id="testimonials" className="py-32 px-6 relative z-10 bg-slate-800/20 float-on-scroll">
         <div className="max-w-5xl mx-auto">
@@ -828,7 +794,6 @@ export default function EnhancedFloatingPortfolio() {
               What clients and colleagues say about working with me
             </p>
           </div>
-
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
               <div
@@ -845,9 +810,7 @@ export default function EnhancedFloatingPortfolio() {
                     />
                   ))}
                 </div>
-
                 <p className="text-slate-300 mb-6 leading-relaxed italic animate-float-quote">"{testimonial.content}"</p>
-
                 <div className="flex items-center gap-4 animate-float-author">
                   <img
                     src={testimonial.avatar}
@@ -865,7 +828,6 @@ export default function EnhancedFloatingPortfolio() {
           </div>
         </div>
       </section>
-
       {/* Enhanced Contact Section */}
       <section id="contact" className="py-32 px-6 relative z-10 float-on-scroll">
         <div className="max-w-6xl mx-auto">
@@ -879,7 +841,6 @@ export default function EnhancedFloatingPortfolio() {
               innovative projects and help bring your ideas to life with cutting-edge technology.
             </p>
           </div>
-
           <div className="grid lg:grid-cols-2 gap-16 items-start">
             {/* Contact Information */}
             <div className="space-y-8 animate-float-left">
@@ -890,7 +851,6 @@ export default function EnhancedFloatingPortfolio() {
                   or just having a conversation about technology and innovation.
                 </p>
               </div>
-
               {/* Contact Methods */}
               <div className="space-y-6">
                 {[
@@ -933,7 +893,6 @@ export default function EnhancedFloatingPortfolio() {
                   </a>
                 ))}
               </div>
-
               {/* Availability Status */}
               <div className="p-6 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-2xl animate-float-status">
                 <div className="flex items-center gap-3 mb-3">
@@ -945,7 +904,6 @@ export default function EnhancedFloatingPortfolio() {
                 </p>
               </div>
             </div>
-
             {/* Quick Action Buttons */}
             <div className="space-y-8 animate-float-right">
               <div className="animate-float-actions-header">
@@ -986,7 +944,6 @@ export default function EnhancedFloatingPortfolio() {
                   ))}
                 </div>
               </div>
-
               {/* Response Time */}
               <div className="p-6 bg-gradient-to-r from-slate-800/80 to-slate-700/80 backdrop-blur-sm border border-slate-600/50 rounded-2xl animate-float-response">
                 <div className="flex items-center gap-3 mb-3">
@@ -1000,7 +957,6 @@ export default function EnhancedFloatingPortfolio() {
                   For urgent matters, please mention "URGENT" in the subject line.
                 </p>
               </div>
-
               {/* Specialties */}
               <div className="p-6 bg-gradient-to-r from-slate-800/80 to-slate-700/80 backdrop-blur-sm border border-slate-600/50 rounded-2xl animate-float-specialties">
                 <h4 className="text-white font-semibold mb-4">Specializing In</h4>
@@ -1026,7 +982,6 @@ export default function EnhancedFloatingPortfolio() {
           </div>
         </div>
       </section>
-
       {/* Enhanced Footer */}
       <footer className="py-16 px-6 border-t border-slate-700/50 relative z-10 animate-float-footer">
         <div className="max-w-7xl mx-auto">
@@ -1047,7 +1002,6 @@ export default function EnhancedFloatingPortfolio() {
                 Always learning, always building, always improving.
               </p>
             </div>
-
             {/* Quick Links */}
             <div className="animate-float-footer-links">
               <h3 className="text-white font-semibold mb-4">Quick Links</h3>
@@ -1064,7 +1018,6 @@ export default function EnhancedFloatingPortfolio() {
                 ))}
               </div>
             </div>
-
             {/* Social Links */}
             <div className="animate-float-footer-social">
               <h3 className="text-white font-semibold mb-4">Connect</h3>
@@ -1086,7 +1039,6 @@ export default function EnhancedFloatingPortfolio() {
               </div>
             </div>
           </div>
-
           {/* Bottom Bar */}
           <div className="pt-8 border-t border-slate-700/50 animate-float-footer-bottom">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
@@ -1104,104 +1056,84 @@ export default function EnhancedFloatingPortfolio() {
           </div>
         </div>
       </footer>
-
       {/* Enhanced Global Styles with Floating Animations */}
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
-
         * {
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
-
         /* Floating Animation Keyframes */
         @keyframes float-gentle {
           0%, 100% { transform: translateY(0px) rotate(0deg); }
           50% { transform: translateY(-8px) rotate(1deg); }
         }
-
         @keyframes float-up {
           0% { opacity: 0; transform: translateY(50px); }
           100% { opacity: 1; transform: translateY(0); }
         }
-
         @keyframes float-up-delayed {
           0% { opacity: 0; transform: translateY(50px); }
           100% { opacity: 1; transform: translateY(0); }
         }
-
         @keyframes float-left {
           0% { opacity: 0; transform: translateX(-50px); }
           100% { opacity: 1; transform: translateX(0); }
         }
-
         @keyframes float-right {
           0% { opacity: 0; transform: translateX(50px); }
           100% { opacity: 1; transform: translateX(0); }
         }
-
         @keyframes float-in {
           0% { opacity: 0; transform: translateY(30px) scale(0.9); }
           100% { opacity: 1; transform: translateY(0) scale(1); }
         }
-
         @keyframes float-in-delayed {
           0% { opacity: 0; transform: translateY(30px) scale(0.9); }
           100% { opacity: 1; transform: translateY(0) scale(1); }
         }
-
         @keyframes pulse-glow {
           0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
           50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.6); }
         }
-
         @keyframes bounce-enhanced {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-15px); }
         }
-
         @keyframes bounce-gentle {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-5px); }
         }
-
         @keyframes slide-down {
           0% { opacity: 0; transform: translateY(-20px); }
           100% { opacity: 1; transform: translateY(0); }
         }
-
         @keyframes expand {
           0% { width: 0; }
           100% { width: 5rem; }
         }
-
         @keyframes expand-vertical {
           0% { height: 0; }
           100% { height: 3rem; }
         }
-
         @keyframes progress-bar {
           0% { width: 0; }
           100% { width: var(--target-width); }
         }
-
         @keyframes spin-slow {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
         }
-
         @keyframes float-particle-1 {
           0%, 100% { transform: translateY(0px) translateX(0px); }
           25% { transform: translateY(-10px) translateX(5px); }
           50% { transform: translateY(-5px) translateX(-3px); }
           75% { transform: translateY(-15px) translateX(8px); }
         }
-
         @keyframes float-particle-2 {
           0%, 100% { transform: translateY(0px) translateX(0px); }
           33% { transform: translateY(-8px) translateX(-5px); }
           66% { transform: translateY(-12px) translateX(3px); }
         }
-
         @keyframes float-particle-3 {
           0%, 100% { transform: translateY(0px) translateX(0px); }
           20% { transform: translateY(-6px) translateX(4px); }
@@ -1209,22 +1141,18 @@ export default function EnhancedFloatingPortfolio() {
           60% { transform: translateY(-4px) translateX(6px); }
           80% { transform: translateY(-12px) translateX(-4px); }
         }
-
         @keyframes float-particle-4 {
           0%, 100% { transform: translateY(0px) translateX(0px); }
           50% { transform: translateY(-20px) translateX(-8px); }
         }
-
         @keyframes float-code-1 {
           0%, 100% { transform: translateY(0px) rotate(12deg); opacity: 0.2; }
           50% { transform: translateY(-10px) rotate(15deg); opacity: 0.3; }
         }
-
         @keyframes float-code-2 {
           0%, 100% { transform: translateY(0px) rotate(-12deg); opacity: 0.2; }
           50% { transform: translateY(-8px) rotate(-15deg); opacity: 0.3; }
         }
-
         /* Animation Classes */
         .animate-float-gentle { animation: float-gentle 4s ease-in-out infinite; }
         .animate-float-up { animation: float-up 0.8s ease-out; }
@@ -1241,7 +1169,6 @@ export default function EnhancedFloatingPortfolio() {
         .animate-expand-vertical { animation: expand-vertical 0.8s ease-out; }
         .animate-progress-bar { animation: progress-bar 1.5s ease-out; }
         .animate-spin-slow { animation: spin-slow 3s linear infinite; }
-
         /* Particle Animations */
         .animate-float-particle-1 { animation: float-particle-1 6s ease-in-out infinite; }
         .animate-float-particle-2 { animation: float-particle-2 8s ease-in-out infinite; }
@@ -1249,21 +1176,17 @@ export default function EnhancedFloatingPortfolio() {
         .animate-float-particle-4 { animation: float-particle-4 5s ease-in-out infinite; }
         .animate-float-code-1 { animation: float-code-1 8s ease-in-out infinite; }
         .animate-float-code-2 { animation: float-code-2 10s ease-in-out infinite; }
-
         /* Navigation Animations */
         .animate-float-nav { animation: float-in 0.6s ease-out; }
-
         /* Button Animations */
         .animate-float-buttons { animation: float-in 1s ease-out 0.8s both; }
         .animate-float-button-1 { animation: float-in 0.8s ease-out 1s both; }
         .animate-float-button-2 { animation: float-in 0.8s ease-out 1.2s both; }
-
         /* Stats Animations */
         .animate-float-stats { animation: float-in 1s ease-out 1.5s both; }
         .animate-float-stat-1 { animation: float-gentle 4s ease-in-out infinite; }
         .animate-float-stat-2 { animation: float-gentle 4s ease-in-out infinite 1s; }
         .animate-float-stat-3 { animation: float-gentle 4s ease-in-out infinite 2s; }
-
         /* Section Animations */
         .animate-float-section-header { animation: float-in 0.8s ease-out; }
         .animate-float-heading { animation: float-up 0.8s ease-out; }
@@ -1271,7 +1194,6 @@ export default function EnhancedFloatingPortfolio() {
         .animate-float-text-1 { animation: float-in 0.8s ease-out 0.3s both; }
         .animate-float-text-2 { animation: float-in 0.8s ease-out 0.5s both; }
         .animate-float-text-delayed { animation: float-in 0.8s ease-out 0.4s both; }
-
         /* About Section Animations */
         .animate-float-highlights { animation: float-in 0.8s ease-out 0.6s both; }
         .animate-float-highlight { animation: float-in 0.6s ease-out; }
@@ -1282,18 +1204,15 @@ export default function EnhancedFloatingPortfolio() {
         .animate-float-badge { animation: float-in 0.8s ease-out 1.2s both; }
         .animate-float-badge-1 { animation: float-gentle 5s ease-in-out infinite; }
         .animate-float-badge-2 { animation: float-gentle 5s ease-in-out infinite 2s; }
-
         /* Experience Section Animations */
         .animate-float-experience { animation: float-in 0.8s ease-out; }
         .animate-float-card { animation: float-gentle 6s ease-in-out infinite; }
         .animate-float-card-delayed { animation: float-gentle 6s ease-in-out infinite 1s; }
         .animate-float-achievement { animation: float-in 0.6s ease-out; }
-
         /* Skills Section Animations */
         .animate-float-skill { animation: float-in 0.8s ease-out; }
         .animate-float-number { animation: float-gentle 4s ease-in-out infinite; }
         .animate-float-tech-pill { animation: float-in 0.4s ease-out; }
-
         /* Projects Section Animations */
         .animate-float-project { animation: float-in 0.8s ease-out; }
         .animate-float-title { animation: float-in 0.6s ease-out 0.2s both; }
@@ -1304,7 +1223,6 @@ export default function EnhancedFloatingPortfolio() {
         .animate-float-links { animation: float-in 0.6s ease-out 0.8s both; }
         .animate-float-link { animation: float-in 0.4s ease-out; }
         .animate-float-icon { animation: float-gentle 3s ease-in-out infinite; }
-
         /* Testimonials Section Animations */
         .animate-float-testimonial { animation: float-in 0.8s ease-out; }
         .animate-float-stars { animation: float-in 0.6s ease-out 0.2s both; }
@@ -1312,7 +1230,6 @@ export default function EnhancedFloatingPortfolio() {
         .animate-float-quote { animation: float-in 0.6s ease-out 0.4s both; }
         .animate-float-author { animation: float-in 0.6s ease-out 0.6s both; }
         .animate-float-avatar { animation: float-gentle 5s ease-in-out infinite; }
-
         /* Contact Section Animations */
         .animate-float-contact-header { animation: float-in 0.8s ease-out; }
         .animate-float-contact { animation: float-in 0.6s ease-out; }
@@ -1322,7 +1239,6 @@ export default function EnhancedFloatingPortfolio() {
         .animate-float-response { animation: float-in 0.8s ease-out 0.4s both; }
         .animate-float-specialties { animation: float-in 0.8s ease-out 0.6s both; }
         .animate-float-specialty { animation: float-in 0.5s ease-out; }
-
         /* Footer Animations */
         .animate-float-footer { animation: float-in 0.8s ease-out; }
         .animate-float-brand { animation: float-left 0.8s ease-out; }
@@ -1333,37 +1249,30 @@ export default function EnhancedFloatingPortfolio() {
         .animate-float-footer-bottom { animation: float-in 0.8s ease-out 0.6s both; }
         .animate-float-copyright { animation: float-left 0.6s ease-out 0.8s both; }
         .animate-float-footer-info { animation: float-right 0.6s ease-out 1s both; }
-
         /* Scroll-triggered floating animations */
         .float-on-scroll {
           opacity: 0;
           transform: translateY(50px);
           transition: all 0.8s ease-out;
         }
-
         .float-on-scroll.animate-float-in {
           opacity: 1;
           transform: translateY(0);
         }
-
         /* Hover Floating Effects */
         .hover\:float:hover {
           animation: float-gentle 2s ease-in-out infinite;
         }
-
         /* Continuous floating for specific elements */
         .float-continuous {
           animation: float-gentle 4s ease-in-out infinite;
         }
-
         .float-continuous-slow {
           animation: float-gentle 6s ease-in-out infinite;
         }
-
         .float-continuous-fast {
           animation: float-gentle 2s ease-in-out infinite;
         }
-
         /* Base animations */
         @keyframes fade-in-up {
           from {
@@ -1375,7 +1284,6 @@ export default function EnhancedFloatingPortfolio() {
             transform: translateY(0);
           }
         }
-
         @keyframes float {
           0%, 100% {
             transform: translateY(0px);
@@ -1384,76 +1292,61 @@ export default function EnhancedFloatingPortfolio() {
             transform: translateY(-10px);
           }
         }
-
         .animate-fade-in-up {
           animation: fade-in-up 1s ease-out;
         }
-
         .animate-float {
           animation: float 3s ease-in-out infinite;
         }
-
         .font-inter {
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
-
         html {
           scroll-behavior: smooth;
         }
-
         body {
           overflow-x: hidden;
           font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
           font-variant-numeric: oldstyle-nums;
         }
-
         /* Enhanced Custom Scrollbar */
         ::-webkit-scrollbar {
           width: 8px;
         }
-
         ::-webkit-scrollbar-track {
           background: rgba(15, 23, 42, 0.3);
         }
-
         ::-webkit-scrollbar-thumb {
           background: linear-gradient(180deg, #3b82f6, #8b5cf6);
           border-radius: 4px;
         }
-
         ::-webkit-scrollbar-thumb:hover {
           background: linear-gradient(180deg, #2563eb, #7c3aed);
         }
-
         /* Professional Typography */
         h1, h2, h3, h4, h5, h6 {
           font-weight: 700;
           letter-spacing: -0.025em;
         }
-
         p {
           line-height: 1.7;
         }
-
         /* Selection Styling */
         ::selection {
           background: rgba(59, 130, 246, 0.3);
           color: white;
         }
-
         /* Focus States */
         button:focus,
         a:focus {
           outline: 2px solid #3b82f6;
           outline-offset: 2px;
         }
-
         /* Smooth Transitions */
         * {
           transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
           transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
         }
-
         /* Performance optimizations for animations */
         .animate-float-gentle,
         .animate-float-particle-1,
@@ -1464,7 +1357,6 @@ export default function EnhancedFloatingPortfolio() {
         .animate-float-badge-2 {
           will-change: transform;
         }
-
         /* Reduce motion for accessibility */
         @media (prefers-reduced-motion: reduce) {
           .animate-float-gentle,
