@@ -1,16 +1,16 @@
 "use client";
-import React, { useEffect, useRef, useState, RefObject } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChevronDown, Github, Linkedin, Mail, ExternalLink, Code, Palette, Zap, Users, Award, MapPin, Terminal, Database, Cloud, Smartphone, Globe, Shield, ArrowRight, Play, Coffee, Clock, Star, CheckCircle } from 'lucide-react';
+import LoadingScreen from '../components/LoadingScreen';
+import BackgroundAnimation from '../components/BackgroundAnimation';
 
 export default function EnhancedFloatingPortfolio() {
-  const canvasRef: RefObject<HTMLCanvasElement | null> = useRef(null);
   const [activeSection, setActiveSection] = useState('home');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [typedText, setTypedText] = useState('');
   const [currentRoleIndex, setCurrentRoleIndex] = useState(0);
   const [showLoading, setShowLoading] = useState(true);
-  const [particleStyles, setParticleStyles] = useState<React.CSSProperties[]>([]);
 
   const roles = [
     'Full-Stack Developer',
@@ -20,35 +20,15 @@ export default function EnhancedFloatingPortfolio() {
   ];
 
   useEffect(() => {
-    // Loading screen timeout
-    const loadingTimeout = setTimeout(() => {
-      setShowLoading(false);
-    }, 5000);
-
     // Page loaded
     const loadedTimeout = setTimeout(() => {
       setIsLoaded(true);
     }, 100);
 
     return () => {
-      clearTimeout(loadingTimeout);
       clearTimeout(loadedTimeout);
     };
   }, []);
-
-  // Generate particle styles on the client side
-  useEffect(() => {
-    if (!showLoading) return; // Only generate when loading screen is active
-    const styles = [...Array(20)].map(() => ({
-      width: `${Math.random() * 10 + 5}px`,
-      height: `${Math.random() * 10 + 5}px`,
-      top: `${Math.random() * 100}%`,
-      left: `${Math.random() * 100}%`,
-      animationDuration: `${Math.random() * 10 + 5}s`,
-      animationDelay: `${Math.random() * 2}s`
-    }));
-    setParticleStyles(styles);
-  }, [showLoading]);
 
   // Typewriter effect for roles
   useEffect(() => {
@@ -68,123 +48,6 @@ export default function EnhancedFloatingPortfolio() {
     return () => clearTimeout(timeout);
   }, [typedText, currentRoleIndex]);
 
-  // Enhanced particle system
-  useEffect(() => {
-    if (showLoading) return; // Don't run canvas animation during loading
-    
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let animationId: number;
-
-    const particles: Particle[] = [];
-    const particleCount = window.innerWidth < 768 ? 80 : 150;
-
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-
-    class Particle {
-      x: number;
-      y: number;
-      size: number;
-      speedX: number;
-      speedY: number;
-      opacity: number;
-      hue: number;
-      pulse: number;
-      floatOffset: number;
-
-      constructor() {
-        this.x = Math.random() * (canvas?.width || 0);
-        this.y = Math.random() * (canvas?.height || 0);
-        this.size = Math.random() * 3 + 0.5;
-        this.speedX = (Math.random() - 0.5) * 2;
-        this.speedY = (Math.random() - 0.5) * 2;
-        this.opacity = Math.random() * 0.8 + 0.2;
-        this.hue = Math.random() * 60 + 200;
-        this.pulse = Math.random() * Math.PI * 2;
-        this.floatOffset = Math.random() * Math.PI * 2;
-      }
-
-      update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
-        this.pulse += 0.03;
-        this.floatOffset += 0.015;
-
-        if (this.x < 0 || this.x > (canvas?.width || 0)) this.speedX *= -1;
-        if (this.y < 0 || this.y > (canvas?.height || 0)) this.speedY *= -1;
-
-        this.y += Math.sin(this.pulse) * 0.5;
-        this.x += Math.cos(this.floatOffset) * 0.3;
-        this.opacity = 0.4 + Math.sin(this.pulse) * 0.3;
-        this.size = (Math.random() * 2 + 1) + Math.sin(this.pulse) * 0.5;
-      }
-
-      draw() {
-        if (ctx) {
-          ctx.beginPath();
-          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-          ctx.fillStyle = `hsla(${this.hue}, 80%, 70%, ${this.opacity})`;
-          ctx.shadowBlur = 20;
-          ctx.shadowColor = `hsla(${this.hue}, 80%, 70%, 0.9)`;
-          ctx.fill();
-          ctx.shadowBlur = 0;
-        }
-      }
-    }
-
-    for (let i = 0; i < particleCount; i++) {
-      particles.push(new Particle());
-    }
-
-    const animate = () => {
-      if (ctx && canvas) {
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.04)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      }
-
-      particles.forEach(particle => {
-        particle.update();
-        particle.draw();
-      });
-
-      // Enhanced connection lines with floating effect
-      particles.forEach((particle, i) => {
-        particles.slice(i + 1).forEach(otherParticle => {
-          const dx = particle.x - otherParticle.x;
-          const dy = particle.y - otherParticle.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-
-          if (distance < 140) {
-            if (ctx) {
-              ctx.beginPath();
-              ctx.moveTo(particle.x, particle.y);
-              ctx.lineTo(otherParticle.x, otherParticle.y);
-              const opacity = 0.2 * (1 - distance / 140);
-              ctx.strokeStyle = `rgba(99, 102, 241, ${opacity})`;
-              ctx.lineWidth = 1;
-              ctx.stroke();
-            }
-          }
-        });
-      });
-
-      animationId = requestAnimationFrame(animate);
-    };
-
-    animate();
-
-    return () => {
-      window.removeEventListener('resize', resizeCanvas);
-      cancelAnimationFrame(animationId);
-    };
-  }, [showLoading]);
 
   // Intersection Observer for floating animations
   useEffect(() => {
@@ -377,55 +240,9 @@ export default function EnhancedFloatingPortfolio() {
 
   return (
     <div className="min-h-screen bg-slate-900 text-white overflow-x-hidden font-inter relative">
-      {/* Professional Loading Screen */}
-      {showLoading && (
-        <div className="fixed inset-0 z-50 bg-slate-900 flex flex-col items-center justify-center">
-          <div className="relative w-32 h-32 mb-8 animate-spin-slow">
-            {/* Animated gradient circle */}
-            <div className="absolute inset-0 rounded-full border-8 border-transparent border-t-blue-500 border-r-purple-500 border-b-pink-500 border-l-cyan-500 animate-spin-gradient"></div>
-            
-            {/* Logo in center */}
-            <div className="absolute inset-4 rounded-full bg-slate-900 flex items-center justify-center">
-              <Terminal className="w-12 h-12 text-blue-400 animate-pulse-glow" />
-            </div>
-          </div>
-          
-          <h2 className="text-2xl md:text-3xl font-bold mb-4 text-white animate-pulse-glow">
-            Loading Portfolio
-          </h2>
-          
-          {/* Animated progress bar */}
-          <div className="w-64 h-2 bg-slate-700 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-full animate-loading-progress"
-              style={{ animationDuration: '5s' }}
-            />
-          </div>
-          
-          {/* Status text */}
-          <p className="mt-4 text-slate-400 text-sm animate-float-gentle">
-            Preparing the experience...
-          </p>
-          
-          {/* Floating particles for loading screen */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {particleStyles.map((style, i) => (
-              <div
-                key={i}
-                className="absolute rounded-full bg-gradient-to-r from-blue-500 to-purple-500 opacity-20 animate-loading-particle"
-                style={style}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+      <LoadingScreen showLoading={showLoading} setShowLoading={setShowLoading} />
 
-      {/* Enhanced Background Canvas */}
-      <canvas
-        ref={canvasRef}
-        className="fixed inset-0 z-0 pointer-events-none"
-        style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)' }}
-      />
+      <BackgroundAnimation showLoading={showLoading} />
 
       {/* Professional Navigation */}
       <nav className={`fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-xl border-b border-slate-700/50 animate-float-gentle transition-opacity duration-500 ${showLoading ? 'opacity-0' : 'opacity-100'}`}>
