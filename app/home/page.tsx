@@ -163,16 +163,6 @@ export default function EnhancedFloatingPortfolio() {
       metrics: { threats: '99.8%', response: '<30s', compliance: '100%' }
     },
     {
-      title: 'Healthcare Mobile App',
-      description: 'HIPAA-compliant telemedicine platform with video consultations, prescription management, and patient portal.',
-      image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=800&h=600&fit=crop',
-      technologies: ['React Native', 'Node.js', 'MongoDB', 'WebRTC', 'AWS', 'HIPAA'],
-      liveUrl: '#',
-      githubUrl: '#',
-      featured: false,
-      metrics: { patients: '50K+', satisfaction: '4.9/5', uptime: '99.95%' }
-    },
-    {
       title: 'Blockchain DeFi Protocol',
       description: 'Decentralized finance protocol with yield farming, liquidity pools, and governance token mechanics.',
       image: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&h=600&fit=crop',
@@ -200,7 +190,7 @@ export default function EnhancedFloatingPortfolio() {
       role: 'VP of Engineering at TechCorp',
       company: 'Fortune 500 Company',
       content: 'Exceptional technical expertise and leadership. Delivered our most complex project 2 weeks ahead of schedule while maintaining the highest code quality standards.',
-      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face',
+      avatar: 'https://picsum.photos/seed/sarah/100/100',
       rating: 5
     },
     {
@@ -208,7 +198,7 @@ export default function EnhancedFloatingPortfolio() {
       role: 'CTO & Co-founder',
       company: 'FinTech Startup',
       content: 'Transformed our security infrastructure and scaled our platform to handle 10x traffic. Their cybersecurity expertise saved us from potential disasters.',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
       rating: 5
     },
     {
@@ -908,7 +898,7 @@ export default function EnhancedFloatingPortfolio() {
                       { text: "Full-Stack Web Applications", color: "bg-blue-400" },
                       { text: "Cloud Architecture & DevOps", color: "bg-purple-400" },
                       { text: "Cybersecurity Solutions", color: "bg-green-400" },
-                      { text: "Mobile App Development", color: "bg-pink-400" }
+                
                     ].map((specialty, index) => (
                       <div
                         key={specialty.text}
