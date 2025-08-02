@@ -384,21 +384,6 @@ export default function EnhancedFloatingPortfolio() {
             </div>
           </div>
 
-          {/* Enhanced Floating Elements */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute top-1/4 left-10 w-2 h-2 bg-blue-500 rounded-full opacity-60 animate-float-particle-1" />
-            <div className="absolute top-1/3 right-20 w-3 h-3 bg-purple-500 rounded-full opacity-40 animate-float-particle-2" />
-            <div className="absolute bottom-1/3 left-1/4 w-1.5 h-1.5 bg-pink-500 rounded-full opacity-50 animate-float-particle-3" />
-            <div className="absolute top-1/2 right-1/4 w-2.5 h-2.5 bg-cyan-500 rounded-full opacity-30 animate-float-particle-4" />
-
-            {/* Code-like floating elements */}
-            <div className="absolute top-20 left-1/4 text-blue-400/20 text-xs font-mono rotate-12 select-none animate-float-code-1">
-              const developer = 'passionate'
-            </div>
-            <div className="absolute bottom-40 right-1/4 text-purple-400/20 text-xs font-mono -rotate-12 select-none animate-float-code-2">
-              {'{ innovation: true }'}
-            </div>
-          </div>
         </section>
 
         {/* Enhanced About Section */}
