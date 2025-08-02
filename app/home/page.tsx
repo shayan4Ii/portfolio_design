@@ -9,6 +9,8 @@ export default function EnhancedFloatingPortfolio() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [typedText, setTypedText] = useState('');
   const [currentRoleIndex, setCurrentRoleIndex] = useState(0);
+  const [showLoading, setShowLoading] = useState(true);
+  const [particleStyles, setParticleStyles] = useState<React.CSSProperties[]>([]);
 
   const roles = [
     'Full-Stack Developer',
@@ -17,9 +19,39 @@ export default function EnhancedFloatingPortfolio() {
     'Cybersecurity Expert'
   ];
 
+  useEffect(() => {
+    // Loading screen timeout
+    const loadingTimeout = setTimeout(() => {
+      setShowLoading(false);
+    }, 5000);
+
+    // Page loaded
+    const loadedTimeout = setTimeout(() => {
+      setIsLoaded(true);
+    }, 100);
+
+    return () => {
+      clearTimeout(loadingTimeout);
+      clearTimeout(loadedTimeout);
+    };
+  }, []);
+
+  // Generate particle styles on the client side
+  useEffect(() => {
+    if (!showLoading) return; // Only generate when loading screen is active
+    const styles = [...Array(20)].map(() => ({
+      width: `${Math.random() * 10 + 5}px`,
+      height: `${Math.random() * 10 + 5}px`,
+      top: `${Math.random() * 100}%`,
+      left: `${Math.random() * 100}%`,
+      animationDuration: `${Math.random() * 10 + 5}s`,
+      animationDelay: `${Math.random() * 2}s`
+    }));
+    setParticleStyles(styles);
+  }, [showLoading]);
+
   // Typewriter effect for roles
   useEffect(() => {
-    setIsLoaded(true);
     let timeout;
     const currentRole = roles[currentRoleIndex];
 
@@ -38,13 +70,15 @@ export default function EnhancedFloatingPortfolio() {
 
   // Enhanced particle system
   useEffect(() => {
+    if (showLoading) return; // Don't run canvas animation during loading
+    
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let animationId: number;
 
     const particles: Particle[] = [];
-    const particleCount = 150;
+    const particleCount = window.innerWidth < 768 ? 80 : 150;
 
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
@@ -150,10 +184,12 @@ export default function EnhancedFloatingPortfolio() {
       window.removeEventListener('resize', resizeCanvas);
       cancelAnimationFrame(animationId);
     };
-  }, []);
+  }, [showLoading]);
 
   // Intersection Observer for floating animations
   useEffect(() => {
+    if (showLoading) return;
+    
     const observerOptions = {
       threshold: 0.1,
       rootMargin: '0px 0px -50px 0px'
@@ -178,7 +214,7 @@ export default function EnhancedFloatingPortfolio() {
     floatingElements.forEach((element) => observer.observe(element));
 
     return () => observer.disconnect();
-  }, []);
+  }, [showLoading]);
 
   const scrollToSection = (sectionId: string) => {
     document.getElementById(sectionId)?.scrollIntoView({
@@ -340,7 +376,50 @@ export default function EnhancedFloatingPortfolio() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white overflow-x-hidden font-inter">
+    <div className="min-h-screen bg-slate-900 text-white overflow-x-hidden font-inter relative">
+      {/* Professional Loading Screen */}
+      {showLoading && (
+        <div className="fixed inset-0 z-50 bg-slate-900 flex flex-col items-center justify-center">
+          <div className="relative w-32 h-32 mb-8 animate-spin-slow">
+            {/* Animated gradient circle */}
+            <div className="absolute inset-0 rounded-full border-8 border-transparent border-t-blue-500 border-r-purple-500 border-b-pink-500 border-l-cyan-500 animate-spin-gradient"></div>
+            
+            {/* Logo in center */}
+            <div className="absolute inset-4 rounded-full bg-slate-900 flex items-center justify-center">
+              <Terminal className="w-12 h-12 text-blue-400 animate-pulse-glow" />
+            </div>
+          </div>
+          
+          <h2 className="text-2xl md:text-3xl font-bold mb-4 text-white animate-pulse-glow">
+            Loading Portfolio
+          </h2>
+          
+          {/* Animated progress bar */}
+          <div className="w-64 h-2 bg-slate-700 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-full animate-loading-progress"
+              style={{ animationDuration: '5s' }}
+            />
+          </div>
+          
+          {/* Status text */}
+          <p className="mt-4 text-slate-400 text-sm animate-float-gentle">
+            Preparing the experience...
+          </p>
+          
+          {/* Floating particles for loading screen */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            {particleStyles.map((style, i) => (
+              <div
+                key={i}
+                className="absolute rounded-full bg-gradient-to-r from-blue-500 to-purple-500 opacity-20 animate-loading-particle"
+                style={style}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Enhanced Background Canvas */}
       <canvas
         ref={canvasRef}
@@ -349,8 +428,8 @@ export default function EnhancedFloatingPortfolio() {
       />
 
       {/* Professional Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-xl border-b border-slate-700/50 animate-float-gentle">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+      <nav className={`fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-xl border-b border-slate-700/50 animate-float-gentle transition-opacity duration-500 ${showLoading ? 'opacity-0' : 'opacity-100'}`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3 animate-float-left">
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center animate-pulse-glow">
@@ -413,713 +492,716 @@ export default function EnhancedFloatingPortfolio() {
         </div>
       </nav>
 
-      {/* Enhanced Hero Section */}
-      <section id="home" className="min-h-screen flex items-center justify-center relative z-10 px-6">
-        <div className={`max-w-7xl mx-auto text-center transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
-          <div className="mb-8">
-            <div className="inline-flex items-center px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full text-blue-400 text-sm font-medium mb-6 animate-float-gentle">
-              <span className="animate-pulse-glow">✨ Available for exciting projects</span>
-            </div>
+      {/* Main Content - Only show after loading */}
+      <div className={`transition-opacity duration-500 ${showLoading ? 'opacity-0' : 'opacity-100'}`}>
+        {/* Enhanced Hero Section */}
+        <section id="home" className="min-h-screen flex items-center justify-center relative z-10 px-4 sm:px-6">
+          <div className={`max-w-7xl mx-auto text-center transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
+            <div className="mb-8">
+              <div className="inline-flex items-center px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full text-blue-400 text-sm font-medium mb-6 animate-float-gentle">
+                <span className="animate-pulse-glow">✨ Available for exciting projects</span>
+              </div>
 
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 leading-tight tracking-tight">
-              <span className="block text-white animate-float-up">Hi, I'm</span>
-              <span className="block bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent animate-float-up-delayed">
-                Shayan Ali
-              </span>
-            </h1>
-
-            <div className="text-2xl md:text-3xl text-slate-300 mb-8 h-12 animate-float-gentle">
-              <span className="text-slate-400">I'm a </span>
-              <span className="text-blue-400 font-semibold">
-                {typedText}
-                <span className="animate-pulse">|</span>
-              </span>
-            </div>
-
-            <p className="text-lg md:text-xl text-slate-400 mb-12 max-w-3xl mx-auto leading-relaxed animate-float-in-delayed">
-              Crafting exceptional digital experiences with cutting-edge technology.
-              Specialized in building scalable applications, secure systems, and intuitive user interfaces
-              that drive business growth and user satisfaction.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16 animate-float-buttons">
-              <button
-                onClick={() => scrollToSection('projects')}
-                className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 animate-float-button-1"
-              >
-                <span className="flex items-center gap-2">
-                  <Play className="w-5 h-5" />
-                  View My Work
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black mb-6 leading-tight tracking-tight">
+                <span className="block text-white animate-float-up">Hi, I'm</span>
+                <span className="block bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent animate-float-up-delayed">
+                  Shayan Ali
                 </span>
-              </button>
-              <button
-                onClick={() => scrollToSection('contact')}
-                className="px-8 py-4 border border-slate-600 text-white font-semibold rounded-xl hover:bg-slate-700/50 hover:border-slate-500 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 animate-float-button-2"
-              >
-                <span className="flex items-center gap-2">
-                  <Coffee className="w-5 h-5" />
-                  Let's Talk
+              </h1>
+
+              <div className="text-xl sm:text-2xl md:text-3xl text-slate-300 mb-8 h-12 animate-float-gentle">
+                <span className="text-slate-400">I'm a </span>
+                <span className="text-blue-400 font-semibold">
+                  {typedText}
+                  <span className="animate-pulse">|</span>
                 </span>
-              </button>
-            </div>
-
-            {/* Quick Stats */}
-            <div className="grid grid-cols-3 gap-8 max-w-md mx-auto mb-12 animate-float-stats">
-              <div className="text-center animate-float-stat-1">
-                <div className="text-2xl font-bold text-blue-400 mb-1 animate-pulse-glow">10+</div>
-                <div className="text-slate-500 text-sm">Projects</div>
-              </div>
-              <div className="text-center animate-float-stat-2">
-                <div className="text-2xl font-bold text-purple-400 mb-1 animate-pulse-glow">1+</div>
-                <div className="text-slate-500 text-sm">Years Exp</div>
-              </div>
-              <div className="text-center animate-float-stat-3">
-                <div className="text-2xl font-bold text-pink-400 mb-1 animate-pulse-glow">99%</div>
-                <div className="text-slate-500 text-sm">Satisfaction</div>
-              </div>
-            </div>
-
-            <div className="animate-bounce-enhanced">
-              <ChevronDown className="w-6 h-6 mx-auto text-slate-500" />
-            </div>
-          </div>
-        </div>
-
-        {/* Enhanced Floating Elements */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-1/4 left-10 w-2 h-2 bg-blue-500 rounded-full opacity-60 animate-float-particle-1" />
-          <div className="absolute top-1/3 right-20 w-3 h-3 bg-purple-500 rounded-full opacity-40 animate-float-particle-2" />
-          <div className="absolute bottom-1/3 left-1/4 w-1.5 h-1.5 bg-pink-500 rounded-full opacity-50 animate-float-particle-3" />
-          <div className="absolute top-1/2 right-1/4 w-2.5 h-2.5 bg-cyan-500 rounded-full opacity-30 animate-float-particle-4" />
-
-          {/* Code-like floating elements */}
-          <div className="absolute top-20 left-1/4 text-blue-400/20 text-xs font-mono rotate-12 select-none animate-float-code-1">
-            const developer = 'passionate'
-          </div>
-          <div className="absolute bottom-40 right-1/4 text-purple-400/20 text-xs font-mono -rotate-12 select-none animate-float-code-2">
-            {'{ innovation: true }'}
-          </div>
-        </div>
-      </section>
-
-      {/* Enhanced About Section */}
-      <section id="about" className="py-32 px-6 relative z-10 float-on-scroll">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-20 items-center">
-            <div className="space-y-8 animate-float-left">
-              <div className="animate-float-heading">
-                <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
-                  About Me
-                </h2>
-                <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mb-8 animate-expand"></div>
               </div>
 
-              <p className="text-lg text-slate-300 leading-relaxed animate-float-text-1">
-                I'm a passionate full-stack developer with over 1 years of experience building
-                innovative digital solutions. My expertise spans modern web technologies,
-                cybersecurity, cloud architecture, and user experience design.
+              <p className="text-base sm:text-lg md:text-xl text-slate-400 mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed animate-float-in-delayed">
+                Crafting exceptional digital experiences with cutting-edge technology.
+                Specialized in building scalable applications, secure systems, and intuitive user interfaces
+                that drive business growth and user satisfaction.
               </p>
 
-              <p className="text-lg text-slate-300 leading-relaxed animate-float-text-2">
-                I believe in writing clean, maintainable code and creating systems that scale.
-                Whether it's architecting microservices, implementing security protocols, or
-                crafting intuitive user interfaces, I bring a holistic approach to every project.
-              </p>
-
-              {/* Professional Highlights */}
-              <div className="grid grid-cols-2 gap-6 animate-float-highlights">
-                {[
-                  'Certified Cloud Architect',
-                  'Security Expert',
-                  'Agile Methodology',
-                  'Team Leadership'
-                ].map((highlight, index) => (
-                  <div
-                    key={highlight}
-                    className="flex items-center space-x-3 p-4 bg-slate-800/50 rounded-xl border border-slate-700/50 animate-float-highlight"
-                    style={{ animationDelay: `${index * 0.2}s` }}
-                  >
-                    <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 animate-pulse-glow" />
-                    <span className="text-slate-300 text-sm">{highlight}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Location & Contact */}
-              <div className="flex items-center gap-4 text-slate-400 animate-float-location">
-                <MapPin className="w-5 h-5 text-blue-400 animate-bounce-gentle" />
-                <span>Punjab, Pakistan</span>
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-green-400">Available for remote work</span>
-              </div>
-
-              {/* Tech Stack Pills */}
-              <div className="flex flex-wrap gap-3 animate-float-tech">
-                {['React', 'Next.js', 'TypeScript', 'Node.js', 'Python', 'AWS', 'Docker', 'PostgreSQL', 'CyberSecurity'].map((tech, index) => (
-                  <div
-                    key={tech}
-                    className="px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 backdrop-blur-sm border border-blue-500/20 text-sm text-blue-300 hover:border-blue-400/40 transition-all duration-300 hover:scale-105 animate-float-pill"
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                  >
-                    {tech}
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div className="relative animate-float-right">
-              <div className="relative w-full h-[600px] bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-3xl backdrop-blur-sm border border-slate-700/50 overflow-hidden group animate-float-image">
-                <img
-                  src="https://www.electrocomit.com/shayan.jpeg"
-                  alt="Shayan Ali - Professional Developer"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
-
-                {/* Professional Badge */}
-                <div className="absolute bottom-6 left-6 right-6 animate-float-badge">
-                  <div className="bg-slate-900/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-white font-semibold">Shayan Ali</div>
-                        <div className="text-blue-400 text-sm">Senior Full-Stack Developer</div>
-                      </div>
-                      <div className="flex space-x-2">
-                        <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                        <span className="text-xs text-slate-400">Online</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Floating Achievement Badges */}
-              <div className="absolute -top-6 -right-6 bg-gradient-to-r from-green-500 to-emerald-500 p-4 rounded-2xl shadow-2xl shadow-green-500/25 animate-float-badge-1">
-                <Award className="w-8 h-8 text-white" />
-              </div>
-              <div className="absolute -bottom-6 -left-6 bg-gradient-to-r from-purple-500 to-pink-500 p-4 rounded-2xl shadow-2xl shadow-purple-500/25 animate-float-badge-2">
-                <Shield className="w-8 h-8 text-white" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Experience Section */}
-      <section id="experience" className="py-32 px-6 relative z-10 bg-slate-800/20 float-on-scroll">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-20 animate-float-section-header">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent animate-float-heading">
-              Professional Experience
-            </h2>
-            <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mx-auto mb-6 animate-expand"></div>
-            <p className="text-slate-400 max-w-2xl mx-auto animate-float-text">
-              Building impactful solutions and leading development teams across various industries
-            </p>
-          </div>
-          <div className="space-y-12">
-            {experience.map((exp, index) => (
-              <div key={index} className="relative animate-float-experience" style={{ animationDelay: `${index * 0.3}s` }}>
-                <div className="flex flex-col lg:flex-row gap-8 items-start">
-                  <div className="lg:w-1/3">
-                    <div className="sticky top-32">
-                      <div className="bg-gradient-to-br from-slate-800/80 to-slate-700/80 backdrop-blur-sm border border-slate-600/50 rounded-2xl p-6 hover:border-blue-500/30 transition-all duration-300 animate-float-card">
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="w-3 h-3 bg-blue-400 rounded-full animate-pulse-glow"></div>
-                          <span className="text-blue-400 text-sm font-medium">{exp.period}</span>
-                        </div>
-                        <h3 className="text-xl font-bold text-white mb-2">{exp.company}</h3>
-                        <p className="text-slate-300 font-medium">{exp.role}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="lg:w-2/3">
-                    <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-8 hover:border-slate-600/70 transition-all duration-300 animate-float-card-delayed">
-                      <p className="text-slate-300 leading-relaxed mb-6">{exp.description}</p>
-
-                      <div className="space-y-3">
-                        <h4 className="text-white font-semibold mb-4">Key Achievements:</h4>
-                        {exp.achievements.map((achievement, i) => (
-                          <div key={i} className="flex items-start gap-3 animate-float-achievement" style={{ animationDelay: `${i * 0.1}s` }}>
-                            <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5 animate-pulse-glow" />
-                            <span className="text-slate-300">{achievement}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {index < experience.length - 1 && (
-                  <div className="hidden lg:block absolute left-[16.66%] top-full w-px h-12 bg-gradient-to-b from-blue-500/50 to-transparent animate-expand-vertical"></div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Skills Section */}
-      <section id="skills" className="py-32 px-6 relative z-10 float-on-scroll">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-20 animate-float-section-header">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent animate-float-heading">
-              Skills & Expertise
-            </h2>
-            <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mx-auto mb-6 animate-expand"></div>
-            <p className="text-slate-400 max-w-2xl mx-auto animate-float-text">
-              Comprehensive skill set developed through years of professional experience and continuous learning
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {skills.map((skill, index) => {
-              const Icon = skill.icon;
-              return (
-                <div
-                  key={index}
-                  className="p-8 rounded-3xl bg-gradient-to-br from-slate-800/50 to-slate-700/30 backdrop-blur-sm border border-slate-700/50 hover:border-blue-500/30 transition-all duration-300 group animate-float-skill"
-                  style={{ animationDelay: `${index * 0.2}s` }}
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mb-12 sm:mb-16 animate-float-buttons">
+                <button
+                  onClick={() => scrollToSection('projects')}
+                  className="group px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 animate-float-button-1"
                 >
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className={`p-3 rounded-2xl bg-gradient-to-r ${skill.color} animate-pulse-glow`}>
-                      <Icon className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="text-2xl font-bold">{skill.category}</h3>
-                  </div>
+                  <span className="flex items-center gap-2">
+                    <Play className="w-5 h-5" />
+                    View My Work
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                </button>
+                <button
+                  onClick={() => scrollToSection('contact')}
+                  className="px-6 sm:px-8 py-3 sm:py-4 border border-slate-600 text-white font-semibold rounded-xl hover:bg-slate-700/50 hover:border-slate-500 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 animate-float-button-2"
+                >
+                  <span className="flex items-center gap-2">
+                    <Coffee className="w-5 h-5" />
+                    Let's Talk
+                  </span>
+                </button>
+              </div>
 
-                  <div className="mb-6">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-slate-400">Proficiency</span>
-                      <span className="text-white font-semibold animate-float-number">{skill.level}%</span>
-                    </div>
-                    <div className="w-full bg-slate-700/50 rounded-full h-3 overflow-hidden">
-                      <div
-                        className={`h-full bg-gradient-to-r ${skill.color} rounded-full transition-all duration-1000 ease-out animate-progress-bar`}
-                        style={{ width: `${skill.level}%`, animationDelay: `${index * 0.2}s` }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    {skill.technologies.map((tech, techIndex) => (
-                      <span
-                        key={techIndex}
-                        className="px-3 py-1 rounded-full bg-slate-700/50 text-sm text-slate-300 animate-float-tech-pill"
-                        style={{ animationDelay: `${techIndex * 0.1}s` }}
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
+              {/* Quick Stats */}
+              <div className="grid grid-cols-3 gap-4 sm:gap-8 max-w-md mx-auto mb-8 sm:mb-12 animate-float-stats">
+                <div className="text-center animate-float-stat-1">
+                  <div className="text-xl sm:text-2xl font-bold text-blue-400 mb-1 animate-pulse-glow">10+</div>
+                  <div className="text-slate-500 text-xs sm:text-sm">Projects</div>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Projects Section */}
-      <section id="projects" className="py-32 px-6 relative z-10 float-on-scroll">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-20 animate-float-section-header">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent animate-float-heading">
-              Featured Projects
-            </h2>
-            <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mx-auto mb-6 animate-expand"></div>
-            <p className="text-slate-400 max-w-2xl mx-auto animate-float-text">
-              Showcasing my best work across various industries and technologies
-            </p>
-          </div>
-
-          <div className="grid gap-8">
-            {projects.map((project, index) => (
-              <div
-                key={index}
-                className={`group cursor-pointer rounded-3xl overflow-hidden bg-gradient-to-br from-slate-800/50 to-slate-700/30 backdrop-blur-sm border border-slate-700/50 hover:border-blue-500/30 transition-all duration-500 hover:transform hover:scale-[1.01] animate-float-project ${
-                  project.featured ? 'lg:grid lg:grid-cols-2' : ''
-                }`}
-                style={{ animationDelay: `${index * 0.2}s` }}
-              >
-                <div className="relative overflow-hidden">
-                  <img
-                    src={project.image}
-                    alt={project.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/30 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-300" />
-
-                  {/* Project Links Overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <a
-                      href={project.liveUrl}
-                      className="p-3 bg-white/10 backdrop-blur-sm rounded-full hover:bg-white/20 transition-colors animate-float-icon"
-                    >
-                      <ExternalLink className="w-5 h-5 text-white" />
-                    </a>
-                    <a
-                      href={project.githubUrl}
-                      className="p-3 bg-white/10 backdrop-blur-sm rounded-full hover:bg-white/20 transition-colors animate-float-icon"
-                      style={{ animationDelay: '0.1s' }}
-                    >
-                      <Github className="w-5 h-5 text-white" />
-                    </a>
-                  </div>
-
-                  {project.featured && (
-                    <div className="absolute top-4 right-4 px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-xs font-semibold animate-pulse-glow">
-                      Featured
-                    </div>
-                  )}
+                <div className="text-center animate-float-stat-2">
+                  <div className="text-xl sm:text-2xl font-bold text-purple-400 mb-1 animate-pulse-glow">1+</div>
+                  <div className="text-slate-500 text-xs sm:text-sm">Years Exp</div>
                 </div>
-
-                <div className="p-8">
-                  <h3 className="text-2xl font-bold mb-4 group-hover:text-blue-400 transition-colors animate-float-title">
-                    {project.title}
-                  </h3>
-                  <p className="text-slate-300 mb-6 leading-relaxed animate-float-text-delayed">
-                    {project.description}
-                  </p>
-
-                  <div className="flex flex-wrap gap-2 mb-6 animate-float-tags">
-                    {project.technologies.map((tech, techIndex) => (
-                      <span
-                        key={techIndex}
-                        className="px-3 py-1 rounded-full bg-slate-700/50 text-sm text-slate-300 animate-float-tag"
-                        style={{ animationDelay: `${techIndex * 0.05}s` }}
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-
-                  {project.metrics && (
-                    <div className="grid grid-cols-3 gap-4 mb-6 animate-float-metrics">
-                      {Object.entries(project.metrics).map(([key, value], metricIndex) => (
-                        <div
-                          key={metricIndex}
-                          className="bg-slate-700/50 rounded-lg p-3 animate-float-metric"
-                          style={{ animationDelay: `${metricIndex * 0.1}s` }}
-                        >
-                          <div className="text-blue-400 font-semibold animate-pulse-glow">{value}</div>
-                          <div className="text-slate-400 text-sm capitalize">{key}</div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="flex gap-4 animate-float-links">
-                    <a
-                      href={project.liveUrl}
-                      className="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-2 animate-float-link"
-                    >
-                      Live Demo <ExternalLink className="w-4 h-4" />
-                    </a>
-                    <a
-                      href={project.githubUrl}
-                      className="text-slate-400 hover:text-slate-300 transition-colors flex items-center gap-2 animate-float-link"
-                      style={{ animationDelay: '0.1s' }}
-                    >
-                      GitHub <Github className="w-4 h-4" />
-                    </a>
-                  </div>
+                <div className="text-center animate-float-stat-3">
+                  <div className="text-xl sm:text-2xl font-bold text-pink-400 mb-1 animate-pulse-glow">99%</div>
+                  <div className="text-slate-500 text-xs sm:text-sm">Satisfaction</div>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* Testimonials Section */}
-      <section id="testimonials" className="py-32 px-6 relative z-10 bg-slate-800/20 float-on-scroll">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-20 animate-float-section-header">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent animate-float-heading">
-              Client Testimonials
-            </h2>
-            <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mx-auto mb-6 animate-expand"></div>
-            <p className="text-slate-400 max-w-2xl mx-auto animate-float-text">
-              What clients and colleagues say about working with me
-            </p>
+              <div className="animate-bounce-enhanced">
+                <ChevronDown className="w-6 h-6 mx-auto text-slate-500" />
+              </div>
+            </div>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <div
-                key={index}
-                className="p-8 rounded-3xl bg-gradient-to-br from-slate-800/50 to-slate-700/30 backdrop-blur-sm border border-slate-700/50 hover:border-blue-500/30 transition-all duration-300 group animate-float-testimonial"
-                style={{ animationDelay: `${index * 0.2}s` }}
-              >
-                <div className="flex gap-1 mb-4 animate-float-stars">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`w-5 h-5 animate-float-star ${i < testimonial.rating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-600'}`}
-                      style={{ animationDelay: `${i * 0.1}s` }}
-                    />
+          {/* Enhanced Floating Elements */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <div className="absolute top-1/4 left-10 w-2 h-2 bg-blue-500 rounded-full opacity-60 animate-float-particle-1" />
+            <div className="absolute top-1/3 right-20 w-3 h-3 bg-purple-500 rounded-full opacity-40 animate-float-particle-2" />
+            <div className="absolute bottom-1/3 left-1/4 w-1.5 h-1.5 bg-pink-500 rounded-full opacity-50 animate-float-particle-3" />
+            <div className="absolute top-1/2 right-1/4 w-2.5 h-2.5 bg-cyan-500 rounded-full opacity-30 animate-float-particle-4" />
+
+            {/* Code-like floating elements */}
+            <div className="absolute top-20 left-1/4 text-blue-400/20 text-xs font-mono rotate-12 select-none animate-float-code-1">
+              const developer = 'passionate'
+            </div>
+            <div className="absolute bottom-40 right-1/4 text-purple-400/20 text-xs font-mono -rotate-12 select-none animate-float-code-2">
+              {'{ innovation: true }'}
+            </div>
+          </div>
+        </section>
+
+        {/* Enhanced About Section */}
+        <section id="about" className="py-20 sm:py-32 px-4 sm:px-6 relative z-10 float-on-scroll">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-12 sm:gap-20 items-center">
+              <div className="space-y-6 sm:space-y-8 animate-float-left">
+                <div className="animate-float-heading">
+                  <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
+                    About Me
+                  </h2>
+                  <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mb-6 sm:mb-8 animate-expand"></div>
+                </div>
+
+                <p className="text-base sm:text-lg text-slate-300 leading-relaxed animate-float-text-1">
+                  I'm a passionate full-stack developer with over 1 years of experience building
+                  innovative digital solutions. My expertise spans modern web technologies,
+                  cybersecurity, cloud architecture, and user experience design.
+                </p>
+
+                <p className="text-base sm:text-lg text-slate-300 leading-relaxed animate-float-text-2">
+                  I believe in writing clean, maintainable code and creating systems that scale.
+                  Whether it's architecting microservices, implementing security protocols, or
+                  crafting intuitive user interfaces, I bring a holistic approach to every project.
+                </p>
+
+                {/* Professional Highlights */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 animate-float-highlights">
+                  {[
+                    'Certified Cloud Architect',
+                    'Security Expert',
+                    'Agile Methodology',
+                    'Team Leadership'
+                  ].map((highlight, index) => (
+                    <div
+                      key={highlight}
+                      className="flex items-center space-x-3 p-3 sm:p-4 bg-slate-800/50 rounded-xl border border-slate-700/50 animate-float-highlight"
+                      style={{ animationDelay: `${index * 0.2}s` }}
+                    >
+                      <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 animate-pulse-glow" />
+                      <span className="text-slate-300 text-sm">{highlight}</span>
+                    </div>
                   ))}
                 </div>
 
-                <p className="text-slate-300 mb-6 leading-relaxed italic animate-float-quote">"{testimonial.content}"</p>
+                {/* Location & Contact */}
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-sm sm:text-base text-slate-400 animate-float-location">
+                  <MapPin className="w-5 h-5 text-blue-400 animate-bounce-gentle" />
+                  <span>Punjab, Pakistan</span>
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-green-400">Available for remote work</span>
+                </div>
 
-                <div className="flex items-center gap-4 animate-float-author">
+                {/* Tech Stack Pills */}
+                <div className="flex flex-wrap gap-2 sm:gap-3 animate-float-tech">
+                  {['React', 'Next.js', 'TypeScript', 'Node.js', 'Python', 'AWS', 'Docker', 'PostgreSQL', 'CyberSecurity'].map((tech, index) => (
+                    <div
+                      key={tech}
+                      className="px-3 sm:px-4 py-1 sm:py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 backdrop-blur-sm border border-blue-500/20 text-xs sm:text-sm text-blue-300 hover:border-blue-400/40 transition-all duration-300 hover:scale-105 animate-float-pill"
+                      style={{ animationDelay: `${index * 0.1}s` }}
+                    >
+                      {tech}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="relative animate-float-right">
+                <div className="relative w-full h-[400px] sm:h-[500px] md:h-[600px] bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-3xl backdrop-blur-sm border border-slate-700/50 overflow-hidden group animate-float-image">
                   <img
-                    src={testimonial.avatar}
-                    alt={testimonial.name}
-                    className="w-12 h-12 rounded-full object-cover animate-float-avatar"
+                    src="https://www.electrocomit.com/shayan.jpeg"
+                    alt="Shayan Ali - Professional Developer"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
-                  <div>
-                    <div className="text-white font-semibold">{testimonial.name}</div>
-                    <div className="text-slate-400 text-sm">{testimonial.role}</div>
-                    <div className="text-blue-400 text-sm">{testimonial.company}</div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
+
+                  {/* Professional Badge */}
+                  <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6 animate-float-badge">
+                    <div className="bg-slate-900/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-3 sm:p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-white font-semibold text-sm sm:text-base">Shayan Ali</div>
+                          <div className="text-blue-400 text-xs sm:text-sm">Senior Full-Stack Developer</div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <div className="w-2 sm:w-3 h-2 sm:h-3 bg-green-400 rounded-full animate-pulse"></div>
+                          <span className="text-xs text-slate-400">Online</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Floating Achievement Badges */}
+                <div className="absolute -top-4 sm:-top-6 -right-4 sm:-right-6 bg-gradient-to-r from-green-500 to-emerald-500 p-3 sm:p-4 rounded-2xl shadow-2xl shadow-green-500/25 animate-float-badge-1">
+                  <Award className="w-6 sm:w-8 h-6 sm:h-8 text-white" />
+                </div>
+                <div className="absolute -bottom-4 sm:-bottom-6 -left-4 sm:-left-6 bg-gradient-to-r from-purple-500 to-pink-500 p-3 sm:p-4 rounded-2xl shadow-2xl shadow-purple-500/25 animate-float-badge-2">
+                  <Shield className="w-6 sm:w-8 h-6 sm:h-8 text-white" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Experience Section */}
+        <section id="experience" className="py-20 sm:py-32 px-4 sm:px-6 relative z-10 bg-slate-800/20 float-on-scroll">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-12 sm:mb-20 animate-float-section-header">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent animate-float-heading">
+                Professional Experience
+              </h2>
+              <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mx-auto mb-6 animate-expand"></div>
+              <p className="text-slate-400 max-w-2xl mx-auto text-sm sm:text-base animate-float-text">
+                Building impactful solutions and leading development teams across various industries
+              </p>
+            </div>
+            <div className="space-y-8 sm:space-y-12">
+              {experience.map((exp, index) => (
+                <div key={index} className="relative animate-float-experience" style={{ animationDelay: `${index * 0.3}s` }}>
+                  <div className="flex flex-col lg:flex-row gap-6 sm:gap-8 items-start">
+                    <div className="lg:w-1/3">
+                      <div className="sticky top-32">
+                        <div className="bg-gradient-to-br from-slate-800/80 to-slate-700/80 backdrop-blur-sm border border-slate-600/50 rounded-2xl p-4 sm:p-6 hover:border-blue-500/30 transition-all duration-300 animate-float-card">
+                          <div className="flex items-center gap-3 mb-3 sm:mb-4">
+                            <div className="w-2 sm:w-3 h-2 sm:h-3 bg-blue-400 rounded-full animate-pulse-glow"></div>
+                            <span className="text-blue-400 text-xs sm:text-sm font-medium">{exp.period}</span>
+                          </div>
+                          <h3 className="text-lg sm:text-xl font-bold text-white mb-1 sm:mb-2">{exp.company}</h3>
+                          <p className="text-slate-300 text-sm sm:text-base font-medium">{exp.role}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="lg:w-2/3">
+                      <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 sm:p-8 hover:border-slate-600/70 transition-all duration-300 animate-float-card-delayed">
+                        <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-4 sm:mb-6">{exp.description}</p>
+
+                        <div className="space-y-3">
+                          <h4 className="text-white font-semibold mb-3 sm:mb-4 text-sm sm:text-base">Key Achievements:</h4>
+                          {exp.achievements.map((achievement, i) => (
+                            <div key={i} className="flex items-start gap-3 animate-float-achievement" style={{ animationDelay: `${i * 0.1}s` }}>
+                              <CheckCircle className="w-4 sm:w-5 h-4 sm:h-5 text-green-400 flex-shrink-0 mt-0.5 animate-pulse-glow" />
+                              <span className="text-slate-300 text-sm sm:text-base">{achievement}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {index < experience.length - 1 && (
+                    <div className="hidden lg:block absolute left-[16.66%] top-full w-px h-8 sm:h-12 bg-gradient-to-b from-blue-500/50 to-transparent animate-expand-vertical"></div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Skills Section */}
+        <section id="skills" className="py-20 sm:py-32 px-4 sm:px-6 relative z-10 float-on-scroll">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-12 sm:mb-20 animate-float-section-header">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent animate-float-heading">
+                Skills & Expertise
+              </h2>
+              <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mx-auto mb-6 animate-expand"></div>
+              <p className="text-slate-400 max-w-2xl mx-auto text-sm sm:text-base animate-float-text">
+                Comprehensive skill set developed through years of professional experience and continuous learning
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              {skills.map((skill, index) => {
+                const Icon = skill.icon;
+                return (
+                  <div
+                    key={index}
+                    className="p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-slate-800/50 to-slate-700/30 backdrop-blur-sm border border-slate-700/50 hover:border-blue-500/30 transition-all duration-300 group animate-float-skill"
+                    style={{ animationDelay: `${index * 0.2}s` }}
+                  >
+                    <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                      <div className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-gradient-to-r ${skill.color} animate-pulse-glow`}>
+                        <Icon className="w-5 sm:w-6 h-5 sm:h-6 text-white" />
+                      </div>
+                      <h3 className="text-xl sm:text-2xl font-bold">{skill.category}</h3>
+                    </div>
+
+                    <div className="mb-4 sm:mb-6">
+                      <div className="flex justify-between items-center mb-1 sm:mb-2">
+                        <span className="text-slate-400 text-xs sm:text-sm">Proficiency</span>
+                        <span className="text-white font-semibold text-sm sm:text-base animate-float-number">{skill.level}%</span>
+                      </div>
+                      <div className="w-full bg-slate-700/50 rounded-full h-2 sm:h-3 overflow-hidden">
+                        <div
+                          className={`h-full bg-gradient-to-r ${skill.color} rounded-full transition-all duration-1000 ease-out animate-progress-bar`}
+                          style={{ width: `${skill.level}%`, animationDelay: `${index * 0.2}s` }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1 sm:gap-2">
+                      {skill.technologies.map((tech, techIndex) => (
+                        <span
+                          key={techIndex}
+                          className="px-2 sm:px-3 py-1 rounded-full bg-slate-700/50 text-xs sm:text-sm text-slate-300 animate-float-tech-pill"
+                          style={{ animationDelay: `${techIndex * 0.1}s` }}
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* Projects Section */}
+        <section id="projects" className="py-20 sm:py-32 px-4 sm:px-6 relative z-10 float-on-scroll">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-12 sm:mb-20 animate-float-section-header">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent animate-float-heading">
+                Featured Projects
+              </h2>
+              <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mx-auto mb-6 animate-expand"></div>
+              <p className="text-slate-400 max-w-2xl mx-auto text-sm sm:text-base animate-float-text">
+                Showcasing my best work across various industries and technologies
+              </p>
+            </div>
+
+            <div className="grid gap-6 sm:gap-8">
+              {projects.map((project, index) => (
+                <div
+                  key={index}
+                  className={`group cursor-pointer rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-br from-slate-800/50 to-slate-700/30 backdrop-blur-sm border border-slate-700/50 hover:border-blue-500/30 transition-all duration-500 hover:transform hover:scale-[1.01] animate-float-project ${
+                    project.featured ? 'lg:grid lg:grid-cols-2' : ''
+                  }`}
+                  style={{ animationDelay: `${index * 0.2}s` }}
+                >
+                  <div className="relative overflow-hidden aspect-video lg:aspect-auto">
+                    <img
+                      src={project.image}
+                      alt={project.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/30 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-300" />
+
+                    {/* Project Links Overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <a
+                        href={project.liveUrl}
+                        className="p-2 sm:p-3 bg-white/10 backdrop-blur-sm rounded-full hover:bg-white/20 transition-colors animate-float-icon"
+                      >
+                        <ExternalLink className="w-4 sm:w-5 h-4 sm:h-5 text-white" />
+                      </a>
+                      <a
+                        href={project.githubUrl}
+                        className="p-2 sm:p-3 bg-white/10 backdrop-blur-sm rounded-full hover:bg-white/20 transition-colors animate-float-icon"
+                        style={{ animationDelay: '0.1s' }}
+                      >
+                        <Github className="w-4 sm:w-5 h-4 sm:h-5 text-white" />
+                      </a>
+                    </div>
+
+                    {project.featured && (
+                      <div className="absolute top-3 sm:top-4 right-3 sm:right-4 px-2 sm:px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-xs font-semibold animate-pulse-glow">
+                        Featured
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-4 sm:p-6 md:p-8">
+                    <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 group-hover:text-blue-400 transition-colors animate-float-title">
+                      {project.title}
+                    </h3>
+                    <p className="text-slate-300 text-sm sm:text-base mb-4 sm:mb-6 leading-relaxed animate-float-text-delayed">
+                      {project.description}
+                    </p>
+
+                    <div className="flex flex-wrap gap-1 sm:gap-2 mb-4 sm:mb-6 animate-float-tags">
+                      {project.technologies.map((tech, techIndex) => (
+                        <span
+                          key={techIndex}
+                          className="px-2 sm:px-3 py-1 rounded-full bg-slate-700/50 text-xs sm:text-sm text-slate-300 animate-float-tag"
+                          style={{ animationDelay: `${techIndex * 0.05}s` }}
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+
+                    {project.metrics && (
+                      <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-6 animate-float-metrics">
+                        {Object.entries(project.metrics).map(([key, value], metricIndex) => (
+                          <div
+                            key={metricIndex}
+                            className="bg-slate-700/50 rounded-lg p-2 sm:p-3 animate-float-metric"
+                            style={{ animationDelay: `${metricIndex * 0.1}s` }}
+                          >
+                            <div className="text-blue-400 font-semibold text-sm sm:text-base animate-pulse-glow">{value}</div>
+                            <div className="text-slate-400 text-xs sm:text-sm capitalize">{key}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="flex gap-3 sm:gap-4 animate-float-links">
+                      <a
+                        href={project.liveUrl}
+                        className="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm animate-float-link"
+                      >
+                        Live Demo <ExternalLink className="w-3 sm:w-4 h-3 sm:h-4" />
+                      </a>
+                      <a
+                        href={project.githubUrl}
+                        className="text-slate-400 hover:text-slate-300 transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm animate-float-link"
+                        style={{ animationDelay: '0.1s' }}
+                      >
+                        GitHub <Github className="w-3 sm:w-4 h-3 sm:h-4" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Testimonials Section */}
+        <section id="testimonials" className="py-20 sm:py-32 px-4 sm:px-6 relative z-10 bg-slate-800/20 float-on-scroll">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-12 sm:mb-20 animate-float-section-header">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent animate-float-heading">
+                Client Testimonials
+              </h2>
+              <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mx-auto mb-6 animate-expand"></div>
+              <p className="text-slate-400 max-w-2xl mx-auto text-sm sm:text-base animate-float-text">
+                What clients and colleagues say about working with me
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              {testimonials.map((testimonial, index) => (
+                <div
+                  key={index}
+                  className="p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-slate-800/50 to-slate-700/30 backdrop-blur-sm border border-slate-700/50 hover:border-blue-500/30 transition-all duration-300 group animate-float-testimonial"
+                  style={{ animationDelay: `${index * 0.2}s` }}
+                >
+                  <div className="flex gap-1 mb-3 sm:mb-4 animate-float-stars">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-4 sm:w-5 h-4 sm:h-5 animate-float-star ${i < testimonial.rating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-600'}`}
+                        style={{ animationDelay: `${i * 0.1}s` }}
+                      />
+                    ))}
+                  </div>
+
+                  <p className="text-slate-300 text-sm sm:text-base mb-4 sm:mb-6 leading-relaxed italic animate-float-quote">"{testimonial.content}"</p>
+
+                  <div className="flex items-center gap-3 sm:gap-4 animate-float-author">
+                    <img
+                      src={testimonial.avatar}
+                      alt={testimonial.name}
+                      className="w-10 sm:w-12 h-10 sm:h-12 rounded-full object-cover animate-float-avatar"
+                    />
+                    <div>
+                      <div className="text-white font-semibold text-sm sm:text-base">{testimonial.name}</div>
+                      <div className="text-slate-400 text-xs sm:text-sm">{testimonial.role}</div>
+                      <div className="text-blue-400 text-xs sm:text-sm">{testimonial.company}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Enhanced Contact Section */}
+        <section id="contact" className="py-20 sm:py-32 px-4 sm:px-6 relative z-10 float-on-scroll">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12 sm:mb-20 animate-float-section-header">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent animate-float-heading">
+                Let's Build Something Amazing
+              </h2>
+              <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mx-auto mb-6 animate-expand"></div>
+              <p className="text-slate-300 text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed animate-float-text">
+                Ready to turn your vision into reality? I'm always excited to collaborate on
+                innovative projects and help bring your ideas to life with cutting-edge technology.
+              </p>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-12 sm:gap-16 items-start">
+              {/* Contact Information */}
+              <div className="space-y-6 sm:space-y-8 animate-float-left">
+                <div className="animate-float-contact-header">
+                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Get In Touch</h3>
+                  <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-6 sm:mb-8">
+                    I'm always open to discussing new opportunities, interesting projects,
+                    or just having a conversation about technology and innovation.
+                  </p>
+                </div>
+
+                {/* Contact Methods */}
+                <div className="space-y-4 sm:space-y-6">
+                  {[
+                    {
+                      href: "mailto:shayanalibusiness@gmail.com",
+                      icon: Mail,
+                      title: "Email",
+                      subtitle: "shayanalibusiness@gmail.com",
+                      color: "from-blue-500 to-blue-600"
+                    },
+                    {
+                      href: "https://linkedin.com/in/shayan4Ii",
+                      icon: Linkedin,
+                      title: "LinkedIn",
+                      subtitle: "Connect with me",
+                      color: "from-blue-600 to-blue-700"
+                    },
+                    {
+                      href: "https://github.com/shayan4Ii",
+                      icon: Github,
+                      title: "GitHub",
+                      subtitle: "View my code",
+                      color: "from-gray-700 to-gray-800"
+                    }
+                  ].map((contact, index) => (
+                    <a
+                      key={contact.title}
+                      href={contact.href}
+                      className="group flex items-center gap-3 sm:gap-4 p-4 sm:p-6 bg-gradient-to-r from-slate-800/80 to-slate-700/80 backdrop-blur-sm border border-slate-600/50 rounded-xl sm:rounded-2xl hover:border-blue-500/50 transition-all duration-300 hover:transform hover:scale-105 animate-float-contact"
+                      style={{ animationDelay: `${index * 0.1}s` }}
+                    >
+                      <div className={`p-2 sm:p-3 bg-gradient-to-r ${contact.color} rounded-lg sm:rounded-xl group-hover:shadow-lg transition-all duration-300 animate-pulse-glow`}>
+                        <contact.icon className="w-5 sm:w-6 h-5 sm:h-6 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-white font-semibold text-sm sm:text-base">{contact.title}</div>
+                        <div className="text-blue-400 group-hover:text-blue-300 transition-colors text-xs sm:text-sm">{contact.subtitle}</div>
+                      </div>
+                      <ArrowRight className="w-4 sm:w-5 h-4 sm:h-5 text-slate-500 group-hover:text-blue-400 group-hover:translate-x-1 transition-all duration-300 ml-auto" />
+                    </a>
+                  ))}
+                </div>
+
+                {/* Availability Status */}
+                <div className="p-4 sm:p-6 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-xl sm:rounded-2xl animate-float-status">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                    <div className="w-2 sm:w-3 h-2 sm:h-3 bg-green-400 rounded-full animate-pulse"></div>
+                    <span className="text-green-400 font-semibold text-sm sm:text-base">Currently Available</span>
+                  </div>
+                  <p className="text-slate-300 text-xs sm:text-sm">
+                    Open for freelance projects, full-time opportunities, and consulting work.
+                  </p>
+                </div>
+              </div>
+
+              {/* Quick Action Buttons */}
+              <div className="space-y-6 sm:space-y-8 animate-float-right">
+                <div className="animate-float-actions-header">
+                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Quick Actions</h3>
+                  <div className="grid gap-3 sm:gap-4">
+                    {[
+                      {
+                        onClick: () => window.open('mailto:shayanalibusiness@gmail.com?subject=Project%20Inquiry'),
+                        icon: Mail,
+                        text: "Start a Project",
+                        className: "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-2xl hover:shadow-blue-500/25"
+                      },
+                      {
+                        onClick: () => window.open('mailto:shayanalibusiness@gmail.com?subject=Consultation%20Request'),
+                        icon: Clock,
+                        text: "Schedule Consultation",
+                        className: "border border-slate-600 text-white hover:bg-slate-700/50 hover:border-slate-500"
+                      },
+                      {
+                        onClick: () => window.open('/resume.pdf'),
+                        icon: ExternalLink,
+                        text: "Download Resume",
+                        className: "border border-slate-600 text-white hover:bg-slate-700/50 hover:border-slate-500"
+                      }
+                    ].map((action, index) => (
+                      <button
+                        key={action.text}
+                        onClick={action.onClick}
+                        className={`group w-full p-4 sm:p-6 font-semibold rounded-xl sm:rounded-2xl transition-all duration-300 transform hover:scale-105 animate-float-action ${action.className}`}
+                        style={{ animationDelay: `${index * 0.1}s` }}
+                      >
+                        <div className="flex items-center justify-center gap-2 sm:gap-3 text-sm sm:text-base">
+                          <action.icon className="w-5 sm:w-6 h-5 sm:h-6" />
+                          <span>{action.text}</span>
+                          <ArrowRight className="w-4 sm:w-5 h-4 sm:h-5 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Response Time */}
+                <div className="p-4 sm:p-6 bg-gradient-to-r from-slate-800/80 to-slate-700/80 backdrop-blur-sm border border-slate-600/50 rounded-xl sm:rounded-2xl animate-float-response">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                    <Clock className="w-4 sm:w-5 h-4 sm:h-5 text-blue-400 animate-spin-slow" />
+                    <span className="text-white font-semibold text-sm sm:text-base">Response Time</span>
+                  </div>
+                  <p className="text-slate-300 text-xs sm:text-sm mb-1 sm:mb-2">
+                    I typically respond to messages within 24 hours.
+                  </p>
+                  <p className="text-slate-400 text-xs">
+                    For urgent matters, please mention "URGENT" in the subject line.
+                  </p>
+                </div>
+
+                {/* Specialties */}
+                <div className="p-4 sm:p-6 bg-gradient-to-r from-slate-800/80 to-slate-700/80 backdrop-blur-sm border border-slate-600/50 rounded-xl sm:rounded-2xl animate-float-specialties">
+                  <h4 className="text-white font-semibold text-sm sm:text-base mb-3 sm:mb-4">Specializing In</h4>
+                  <div className="space-y-2 sm:space-y-3">
+                    {[
+                      { text: "Full-Stack Web Applications", color: "bg-blue-400" },
+                      { text: "Cloud Architecture & DevOps", color: "bg-purple-400" },
+                      { text: "Cybersecurity Solutions", color: "bg-green-400" },
+                      { text: "Mobile App Development", color: "bg-pink-400" }
+                    ].map((specialty, index) => (
+                      <div
+                        key={specialty.text}
+                        className="flex items-center gap-2 sm:gap-3 animate-float-specialty"
+                        style={{ animationDelay: `${index * 0.1}s` }}
+                      >
+                        <div className={`w-2 h-2 ${specialty.color} rounded-full animate-pulse-glow`}></div>
+                        <span className="text-slate-300 text-xs sm:text-sm">{specialty.text}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Enhanced Contact Section */}
-      <section id="contact" className="py-32 px-6 relative z-10 float-on-scroll">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-20 animate-float-section-header">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent animate-float-heading">
-              Let's Build Something Amazing
-            </h2>
-            <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mx-auto mb-6 animate-expand"></div>
-            <p className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed animate-float-text">
-              Ready to turn your vision into reality? I'm always excited to collaborate on
-              innovative projects and help bring your ideas to life with cutting-edge technology.
-            </p>
-          </div>
-
-          <div className="grid lg:grid-cols-2 gap-16 items-start">
-            {/* Contact Information */}
-            <div className="space-y-8 animate-float-left">
-              <div className="animate-float-contact-header">
-                <h3 className="text-2xl font-bold text-white mb-6">Get In Touch</h3>
-                <p className="text-slate-300 leading-relaxed mb-8">
-                  I'm always open to discussing new opportunities, interesting projects,
-                  or just having a conversation about technology and innovation.
-                </p>
-              </div>
-
-              {/* Contact Methods */}
-              <div className="space-y-6">
-                {[
-                  {
-                    href: "mailto:shayanalibusiness@gmail.com",
-                    icon: Mail,
-                    title: "Email",
-                    subtitle: "shayanalibusiness@gmail.com",
-                    color: "from-blue-500 to-blue-600"
-                  },
-                  {
-                    href: "https://linkedin.com/in/shayan4Ii",
-                    icon: Linkedin,
-                    title: "LinkedIn",
-                    subtitle: "Connect with me",
-                    color: "from-blue-600 to-blue-700"
-                  },
-                  {
-                    href: "https://github.com/shayan4Ii",
-                    icon: Github,
-                    title: "GitHub",
-                    subtitle: "View my code",
-                    color: "from-gray-700 to-gray-800"
-                  }
-                ].map((contact, index) => (
-                  <a
-                    key={contact.title}
-                    href={contact.href}
-                    className="group flex items-center gap-4 p-6 bg-gradient-to-r from-slate-800/80 to-slate-700/80 backdrop-blur-sm border border-slate-600/50 rounded-2xl hover:border-blue-500/50 transition-all duration-300 hover:transform hover:scale-105 animate-float-contact"
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                  >
-                    <div className={`p-3 bg-gradient-to-r ${contact.color} rounded-xl group-hover:shadow-lg transition-all duration-300 animate-pulse-glow`}>
-                      <contact.icon className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <div className="text-white font-semibold">{contact.title}</div>
-                      <div className="text-blue-400 group-hover:text-blue-300 transition-colors">{contact.subtitle}</div>
-                    </div>
-                    <ArrowRight className="w-5 h-5 text-slate-500 group-hover:text-blue-400 group-hover:translate-x-1 transition-all duration-300 ml-auto" />
-                  </a>
-                ))}
-              </div>
-
-              {/* Availability Status */}
-              <div className="p-6 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-2xl animate-float-status">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                  <span className="text-green-400 font-semibold">Currently Available</span>
-                </div>
-                <p className="text-slate-300 text-sm">
-                  Open for freelance projects, full-time opportunities, and consulting work.
-                </p>
-              </div>
             </div>
+          </div>
+        </section>
 
-            {/* Quick Action Buttons */}
-            <div className="space-y-8 animate-float-right">
-              <div className="animate-float-actions-header">
-                <h3 className="text-2xl font-bold text-white mb-6">Quick Actions</h3>
-                <div className="grid gap-4">
-                  {[
-                    {
-                      onClick: () => window.open('mailto:shayanalibusiness@gmail.com?subject=Project%20Inquiry'),
-                      icon: Mail,
-                      text: "Start a Project",
-                      className: "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-2xl hover:shadow-blue-500/25"
-                    },
-                    {
-                      onClick: () => window.open('mailto:shayanalibusiness@gmail.com?subject=Consultation%20Request'),
-                      icon: Clock,
-                      text: "Schedule Consultation",
-                      className: "border border-slate-600 text-white hover:bg-slate-700/50 hover:border-slate-500"
-                    },
-                    {
-                      onClick: () => window.open('/resume.pdf'),
-                      icon: ExternalLink,
-                      text: "Download Resume",
-                      className: "border border-slate-600 text-white hover:bg-slate-700/50 hover:border-slate-500"
-                    }
-                  ].map((action, index) => (
+        {/* Enhanced Footer */}
+        <footer className="py-12 sm:py-16 px-4 sm:px-6 border-t border-slate-700/50 relative z-10 animate-float-footer">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid md:grid-cols-4 gap-8 sm:gap-12 mb-8 sm:mb-12">
+              {/* Brand */}
+              <div className="md:col-span-2 animate-float-brand">
+                <div className="flex items-center space-x-3 mb-4 sm:mb-6">
+                  <div className="w-10 sm:w-12 h-10 sm:h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg sm:rounded-xl flex items-center justify-center animate-pulse-glow">
+                    <Terminal className="w-5 sm:w-6 h-5 sm:h-6 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-xl sm:text-2xl font-bold text-white">Shayan Ali</div>
+                    <div className="text-slate-400 text-xs sm:text-sm">Full-Stack Developer & Cybersecurity Expert</div>
+                  </div>
+                </div>
+                <p className="text-slate-400 text-xs sm:text-sm leading-relaxed max-w-md">
+                  Passionate about creating innovative digital solutions that make a difference.
+                  Always learning, always building, always improving.
+                </p>
+              </div>
+
+              {/* Quick Links */}
+              <div className="animate-float-footer-links">
+                <h3 className="text-white font-semibold text-sm sm:text-base mb-3 sm:mb-4">Quick Links</h3>
+                <div className="space-y-2 sm:space-y-3">
+                  {['About', 'Skills', 'Projects', 'Contact'].map((link, index) => (
                     <button
-                      key={action.text}
-                      onClick={action.onClick}
-                      className={`group w-full p-6 font-semibold rounded-2xl transition-all duration-300 transform hover:scale-105 animate-float-action ${action.className}`}
+                      key={link}
+                      onClick={() => scrollToSection(link.toLowerCase())}
+                      className="block text-slate-400 hover:text-blue-400 transition-colors text-xs sm:text-sm animate-float-footer-link"
                       style={{ animationDelay: `${index * 0.1}s` }}
                     >
-                      <div className="flex items-center justify-center gap-3">
-                        <action.icon className="w-6 h-6" />
-                        <span>{action.text}</span>
-                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                      </div>
+                      {link}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Response Time */}
-              <div className="p-6 bg-gradient-to-r from-slate-800/80 to-slate-700/80 backdrop-blur-sm border border-slate-600/50 rounded-2xl animate-float-response">
-                <div className="flex items-center gap-3 mb-3">
-                  <Clock className="w-5 h-5 text-blue-400 animate-spin-slow" />
-                  <span className="text-white font-semibold">Response Time</span>
-                </div>
-                <p className="text-slate-300 text-sm mb-2">
-                  I typically respond to messages within 24 hours.
-                </p>
-                <p className="text-slate-400 text-xs">
-                  For urgent matters, please mention "URGENT" in the subject line.
-                </p>
-              </div>
-
-              {/* Specialties */}
-              <div className="p-6 bg-gradient-to-r from-slate-800/80 to-slate-700/80 backdrop-blur-sm border border-slate-600/50 rounded-2xl animate-float-specialties">
-                <h4 className="text-white font-semibold mb-4">Specializing In</h4>
-                <div className="space-y-3">
+              {/* Social Links */}
+              <div className="animate-float-footer-social">
+                <h3 className="text-white font-semibold text-sm sm:text-base mb-3 sm:mb-4">Connect</h3>
+                <div className="flex gap-3 sm:gap-4">
                   {[
-                    { text: "Full-Stack Web Applications", color: "bg-blue-400" },
-                    { text: "Cloud Architecture & DevOps", color: "bg-purple-400" },
-                    { text: "Cybersecurity Solutions", color: "bg-green-400" },
-                    { text: "Mobile App Development", color: "bg-pink-400" }
-                  ].map((specialty, index) => (
-                    <div
-                      key={specialty.text}
-                      className="flex items-center gap-3 animate-float-specialty"
+                    { href: "https://github.com/shayan4Ii", icon: Github, hoverColor: "group-hover:text-white" },
+                    { href: "https://linkedin.com/in/shayan4li", icon: Linkedin, hoverColor: "group-hover:text-blue-400" },
+                    { href: "mailto:shayanalibusiness@gmail.com", icon: Mail, hoverColor: "group-hover:text-blue-400" }
+                  ].map((social, index) => (
+                    <a
+                      key={social.href}
+                      href={social.href}
+                      className="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-slate-800/50 hover:bg-slate-700/50 transition-colors group animate-float-social"
                       style={{ animationDelay: `${index * 0.1}s` }}
                     >
-                      <div className={`w-2 h-2 ${specialty.color} rounded-full animate-pulse-glow`}></div>
-                      <span className="text-slate-300 text-sm">{specialty.text}</span>
-                    </div>
+                      <social.icon className={`w-4 sm:w-5 h-4 sm:h-5 text-slate-400 transition-colors ${social.hoverColor}`} />
+                    </a>
                   ))}
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Enhanced Footer */}
-      <footer className="py-16 px-6 border-t border-slate-700/50 relative z-10 animate-float-footer">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-12 mb-12">
-            {/* Brand */}
-            <div className="md:col-span-2 animate-float-brand">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center animate-pulse-glow">
-                  <Terminal className="w-6 h-6 text-white" />
+            {/* Bottom Bar */}
+            <div className="pt-6 sm:pt-8 border-t border-slate-700/50 animate-float-footer-bottom">
+              <div className="flex flex-col md:flex-row justify-between items-center gap-3 sm:gap-4">
+                <div className="text-slate-400 text-xs sm:text-sm animate-float-copyright">
+                  © 2025 Shayan Ali. Crafted with ❤️ and lots of ☕
                 </div>
-                <div>
-                  <div className="text-2xl font-bold text-white">Shayan Ali</div>
-                  <div className="text-sm text-slate-400">Full-Stack Developer & Cybersecurity Expert</div>
-                </div>
-              </div>
-              <p className="text-slate-400 leading-relaxed max-w-md">
-                Passionate about creating innovative digital solutions that make a difference.
-                Always learning, always building, always improving.
-              </p>
-            </div>
-
-            {/* Quick Links */}
-            <div className="animate-float-footer-links">
-              <h3 className="text-white font-semibold mb-4">Quick Links</h3>
-              <div className="space-y-3">
-                {['About', 'Skills', 'Projects', 'Contact'].map((link, index) => (
-                  <button
-                    key={link}
-                    onClick={() => scrollToSection(link.toLowerCase())}
-                    className="block text-slate-400 hover:text-blue-400 transition-colors text-sm animate-float-footer-link"
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                  >
-                    {link}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Social Links */}
-            <div className="animate-float-footer-social">
-              <h3 className="text-white font-semibold mb-4">Connect</h3>
-              <div className="flex gap-4">
-                {[
-                  { href: "https://github.com/shayan4Ii", icon: Github, hoverColor: "group-hover:text-white" },
-                  { href: "https://linkedin.com/in/shayan4li", icon: Linkedin, hoverColor: "group-hover:text-blue-400" },
-                  { href: "mailto:shayanalibusiness@gmail.com", icon: Mail, hoverColor: "group-hover:text-blue-400" }
-                ].map((social, index) => (
-                  <a
-                    key={social.href}
-                    href={social.href}
-                    className="p-3 rounded-xl bg-slate-800/50 hover:bg-slate-700/50 transition-colors group animate-float-social"
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                  >
-                    <social.icon className={`w-5 h-5 text-slate-400 transition-colors ${social.hoverColor}`} />
-                  </a>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Bar */}
-          <div className="pt-8 border-t border-slate-700/50 animate-float-footer-bottom">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-              <div className="text-slate-400 text-sm animate-float-copyright">
-                © 2025 Shayan Ali. Crafted with ❤️ and lots of ☕
-              </div>
-              <div className="flex items-center gap-6 text-sm animate-float-footer-info">
-                <span className="text-slate-500">Built with React & Tailwind CSS</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                  <span className="text-green-400">All systems operational</span>
+                <div className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm animate-float-footer-info">
+                  <span className="text-slate-500">Built with React & Tailwind CSS</span>
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    <span className="text-green-400">All systems operational</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </footer>
+        </footer>
+      </div>
 
       {/* Enhanced Global Styles with Floating Animations */}
       <style jsx global>{`
@@ -1205,6 +1287,21 @@ export default function EnhancedFloatingPortfolio() {
           100% { transform: rotate(360deg); }
         }
 
+        @keyframes spin-gradient {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        @keyframes loading-progress {
+          0% { width: 0%; }
+          100% { width: 100%; }
+        }
+
+        @keyframes loading-particle {
+          0%, 100% { transform: translateY(0) translateX(0); opacity: 0.2; }
+          50% { transform: translateY(-20px) translateX(10px); opacity: 0.5; }
+        }
+
         @keyframes float-particle-1 {
           0%, 100% { transform: translateY(0px) translateX(0px); }
           25% { transform: translateY(-10px) translateX(5px); }
@@ -1239,6 +1336,19 @@ export default function EnhancedFloatingPortfolio() {
         @keyframes float-code-2 {
           0%, 100% { transform: translateY(0px) rotate(-12deg); opacity: 0.2; }
           50% { transform: translateY(-8px) rotate(-15deg); opacity: 0.3; }
+        }
+
+        /* Loading Screen Animations */
+        .animate-spin-gradient {
+          animation: spin-gradient 3s linear infinite;
+        }
+
+        .animate-loading-progress {
+          animation: loading-progress 5s linear forwards;
+        }
+
+        .animate-loading-particle {
+          animation: loading-particle 10s ease-in-out infinite;
         }
 
         /* Animation Classes */
@@ -1468,6 +1578,7 @@ export default function EnhancedFloatingPortfolio() {
         * {
           transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
           transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+          transition-duration: 200ms;
         }
 
         /* Performance optimizations for animations */
@@ -1477,7 +1588,8 @@ export default function EnhancedFloatingPortfolio() {
         .animate-float-particle-3,
         .animate-float-particle-4,
         .animate-float-badge-1,
-        .animate-float-badge-2 {
+        .animate-float-badge-2,
+        .animate-loading-particle {
           will-change: transform;
         }
 
@@ -1494,9 +1606,40 @@ export default function EnhancedFloatingPortfolio() {
           .animate-float-code-2,
           .animate-float-badge-1,
           .animate-float-badge-2,
-          .animate-spin-slow {
+          .animate-spin-slow,
+          .animate-spin-gradient,
+          .animate-loading-progress,
+          .animate-loading-particle {
             animation-duration: 0.01ms !important;
             animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+          }
+        }
+
+        /* Mobile-specific optimizations */
+        @media (max-width: 640px) {
+          .md\:hidden {
+            display: none;
+          }
+          
+          .grid-cols-3 {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+          }
+          
+          .lg\:grid-cols-3 {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+          }
+          
+          .lg\:grid-cols-2 {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+          }
+          
+          .md\:grid-cols-2 {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+          }
+          
+          .md\:col-span-2 {
+            grid-column: span 1;
           }
         }
       `}</style>
