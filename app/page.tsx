@@ -1,102 +1,442 @@
-import Image from "next/image";
+"use client";
+import { useState, useEffect } from "react";
+import { Mail, ExternalLink, Code, Palette, Zap, Users, ChevronDown, Menu, X, Github, Linkedin } from "lucide-react";
+import LoadingScreen from "./components/LoadingScreen";
+import BackgroundAnimation from "./components/BackgroundAnimation";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [showLoading, setShowLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState('hero');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = ['hero', 'about', 'skills', 'projects', 'contact'];
+      const scrollPosition = window.scrollY + 100;
+
+      for (const section of sections) {
+        const element = document.getElementById(section);
+        if (element) {
+          const { offsetTop, offsetHeight } = element;
+          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+            setActiveSection(section);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+      setMobileMenuOpen(false);
+    }
+  };
+
+  const skills = [
+    { name: 'React', level: 95, color: 'from-blue-500 to-cyan-500' },
+    { name: 'Next.js', level: 90, color: 'from-purple-500 to-pink-500' },
+    { name: 'TypeScript', level: 85, color: 'from-blue-600 to-blue-400' },
+    { name: 'Node.js', level: 88, color: 'from-green-500 to-emerald-500' },
+    { name: 'Python', level: 82, color: 'from-yellow-500 to-orange-500' },
+    { name: 'UI/UX Design', level: 78, color: 'from-pink-500 to-rose-500' },
+  ];
+
+  const projects = [
+    {
+      title: 'E-Commerce Platform',
+      description: 'Full-stack e-commerce solution with React, Node.js, and Stripe integration',
+      image: '/api/placeholder/400/250',
+      tech: ['React', 'Node.js', 'MongoDB', 'Stripe'],
+      github: '#',
+      live: '#'
+    },
+    {
+      title: 'Task Management App',
+      description: 'Collaborative task management tool with real-time updates and team features',
+      image: '/api/placeholder/400/250',
+      tech: ['Next.js', 'TypeScript', 'PostgreSQL', 'Socket.io'],
+      github: '#',
+      live: '#'
+    },
+    {
+      title: 'Portfolio Website',
+      description: 'Modern portfolio website with beautiful animations and responsive design',
+      image: '/api/placeholder/400/250',
+      tech: ['Next.js', 'Tailwind CSS', 'Framer Motion', 'GSAP'],
+      github: '#',
+      live: '#'
+    }
+  ];
+
+  if (showLoading) {
+    return <LoadingScreen showLoading={showLoading} setShowLoading={setShowLoading} />;
+  }
+
+  return (
+    <div className="relative min-h-screen">
+      <BackgroundAnimation showLoading={showLoading} />
+      
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-40 glass-effect">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="text-2xl font-bold text-gradient">Shayan</div>
+            
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex space-x-8">
+              {[
+                { id: 'hero', label: 'Home' },
+                { id: 'about', label: 'About' },
+                { id: 'skills', label: 'Skills' },
+                { id: 'projects', label: 'Projects' },
+                { id: 'contact', label: 'Contact' }
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => scrollToSection(item.id)}
+                  className={`transition-colors duration-300 hover:text-blue-400 ${
+                    activeSection === item.id ? 'text-blue-400' : 'text-slate-300'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              className="md:hidden text-white"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
+
+          {/* Mobile Navigation */}
+          {mobileMenuOpen && (
+            <div className="md:hidden mt-4 pb-4">
+              {[
+                { id: 'hero', label: 'Home' },
+                { id: 'about', label: 'About' },
+                { id: 'skills', label: 'Skills' },
+                { id: 'projects', label: 'Projects' },
+                { id: 'contact', label: 'Contact' }
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => scrollToSection(item.id)}
+                  className={`block w-full text-left py-2 transition-colors duration-300 hover:text-blue-400 ${
+                    activeSection === item.id ? 'text-blue-400' : 'text-slate-300'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      </nav>
+
+      {/* Hero Section */}
+      <section id="hero" className="min-h-screen flex items-center justify-center relative">
+        <div className="container mx-auto px-6 text-center">
+          <div className="space-y-8">
+            <div className="space-y-4">
+              <h1 className="text-5xl md:text-7xl font-bold text-gradient">
+                Shayan
+              </h1>
+              <p className="text-xl md:text-2xl text-slate-300">
+                Full Stack Developer & UI/UX Enthusiast
+              </p>
+            </div>
+            
+            <p className="text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
+              Crafting digital experiences with modern technologies. 
+              I specialize in creating scalable web applications and beautiful user interfaces.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <button
+                onClick={() => scrollToSection('projects')}
+                className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full hover:from-blue-600 hover:to-purple-700 transition-all duration-300 hover-lift"
+              >
+                View My Work
+              </button>
+              <button
+                onClick={() => scrollToSection('contact')}
+                className="px-8 py-3 border border-blue-500 text-blue-400 rounded-full hover:bg-blue-500 hover:text-white transition-all duration-300"
+              >
+                Get In Touch
+              </button>
+            </div>
+
+            <div className="flex justify-center space-x-6 mt-8">
+              <a href="#" className="text-slate-400 hover:text-blue-400 transition-colors duration-300">
+                <Github size={24} />
+              </a>
+              <a href="#" className="text-slate-400 hover:text-blue-400 transition-colors duration-300">
+                <Linkedin size={24} />
+              </a>
+              <a href="#" className="text-slate-400 hover:text-blue-400 transition-colors duration-300">
+                <Mail size={24} />
+              </a>
+            </div>
+          </div>
+
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <ChevronDown className="text-slate-400" size={32} />
+          </div>
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section id="about" className="section-padding bg-slate-900/50">
+        <div className="container mx-auto px-6">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-gradient">
+              About Me
+            </h2>
+            
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <div className="space-y-6">
+                <p className="text-lg text-slate-300 leading-relaxed">
+                  I'm a passionate full-stack developer with over 5 years of experience 
+                  creating digital solutions that combine functionality with beautiful design. 
+                  My journey in tech started with curiosity and has evolved into a love for 
+                  building applications that make a difference.
+                </p>
+                
+                <p className="text-lg text-slate-300 leading-relaxed">
+                  When I'm not coding, you'll find me exploring new technologies, 
+                  contributing to open source projects, or sharing knowledge with the 
+                  developer community. I believe in continuous learning and staying 
+                  updated with the latest industry trends.
+                </p>
+
+                <div className="flex flex-wrap gap-4 mt-6">
+                  <div className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-full">
+                    <Code className="text-blue-400" size={20} />
+                    <span className="text-slate-300">Clean Code</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-full">
+                    <Palette className="text-purple-400" size={20} />
+                    <span className="text-slate-300">UI/UX Design</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-full">
+                    <Zap className="text-yellow-400" size={20} />
+                    <span className="text-slate-300">Performance</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-full">
+                    <Users className="text-green-400" size={20} />
+                    <span className="text-slate-300">Collaboration</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative">
+                <div className="aspect-square bg-gradient-to-br from-blue-500/20 to-purple-600/20 rounded-2xl flex items-center justify-center">
+                  <div className="text-6xl">👨‍💻</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Skills Section */}
+      <section id="skills" className="section-padding">
+        <div className="container mx-auto px-6">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-gradient">
+              Skills & Expertise
+            </h2>
+            
+            <div className="grid gap-8">
+              {skills.map((skill, index) => (
+                <div key={skill.name} className="group">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-lg font-medium text-slate-300">{skill.name}</span>
+                    <span className="text-sm text-slate-400">{skill.level}%</span>
+                  </div>
+                  <div className="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
+                    <div 
+                      className={`h-full bg-gradient-to-r ${skill.color} rounded-full transition-all duration-1000 ease-out group-hover:animate-pulse`}
+                      style={{ 
+                        width: `${skill.level}%`,
+                        animationDelay: `${index * 0.2}s`
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Projects Section */}
+      <section id="projects" className="section-padding bg-slate-900/50">
+        <div className="container mx-auto px-6">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-gradient">
+              Featured Projects
+            </h2>
+            
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {projects.map((project) => (
+                <div key={project.title} className="group glass-effect rounded-xl overflow-hidden hover-lift">
+                  <div className="aspect-video bg-gradient-to-br from-blue-500/20 to-purple-600/20 flex items-center justify-center">
+                    <div className="text-4xl">🚀</div>
+                  </div>
+                  
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold mb-2 text-white group-hover:text-blue-400 transition-colors">
+                      {project.title}
+                    </h3>
+                    <p className="text-slate-400 mb-4 text-sm leading-relaxed">
+                      {project.description}
+                    </p>
+                    
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {project.tech.map((tech) => (
+                        <span key={tech} className="px-2 py-1 bg-slate-800 text-slate-300 rounded text-xs">
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+                    
+                    <div className="flex gap-3">
+                      <a 
+                        href={project.github}
+                        className="flex items-center gap-1 text-slate-400 hover:text-blue-400 transition-colors text-sm"
+                      >
+                        <Github size={16} />
+                        Code
+                      </a>
+                      <a 
+                        href={project.live}
+                        className="flex items-center gap-1 text-slate-400 hover:text-blue-400 transition-colors text-sm"
+                      >
+                        <ExternalLink size={16} />
+                        Live Demo
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section id="contact" className="section-padding">
+        <div className="container mx-auto px-6">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-gradient">
+              Let's Work Together
+            </h2>
+            
+            <div className="grid md:grid-cols-2 gap-12">
+              <div className="space-y-6">
+                <h3 className="text-2xl font-bold text-white mb-4">Get in touch</h3>
+                <p className="text-slate-300 leading-relaxed">
+                  I'm always interested in new opportunities and exciting projects. 
+                  Whether you're a company looking to hire, or you're a fellow developer 
+                  looking to collaborate, I'd love to hear from you.
+                </p>
+                
+                <div className="space-y-4">
+                  <a href="mailto:hello@shayan.dev" className="flex items-center gap-3 text-slate-300 hover:text-blue-400 transition-colors">
+                    <Mail size={20} />
+                    hello@shayan.dev
+                  </a>
+                  <a href="#" className="flex items-center gap-3 text-slate-300 hover:text-blue-400 transition-colors">
+                    <Github size={20} />
+                    /shayan
+                  </a>
+                  <a href="#" className="flex items-center gap-3 text-slate-300 hover:text-blue-400 transition-colors">
+                    <Linkedin size={20} />
+                    /in/shayan
+                  </a>
+                </div>
+              </div>
+              
+              <form className="space-y-6">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-2">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-slate-400"
+                    placeholder="Your name"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-slate-400"
+                    placeholder="your@email.com"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="message" className="block text-sm font-medium text-slate-300 mb-2">
+                    Message
+                  </label>
+                  <textarea
+                    id="message"
+                    rows={5}
+                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-slate-400 resize-none"
+                    placeholder="Tell me about your project..."
+                  ></textarea>
+                </div>
+                
+                <button
+                  type="submit"
+                  className="w-full px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 hover-lift"
+                >
+                  Send Message
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-slate-900 py-12">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="text-slate-400 mb-4 md:mb-0">
+              © 2024 Shayan. All rights reserved.
+            </div>
+            <div className="flex space-x-6">
+              <a href="#" className="text-slate-400 hover:text-blue-400 transition-colors">
+                <Github size={20} />
+              </a>
+              <a href="#" className="text-slate-400 hover:text-blue-400 transition-colors">
+                <Linkedin size={20} />
+              </a>
+              <a href="#" className="text-slate-400 hover:text-blue-400 transition-colors">
+                <Mail size={20} />
+              </a>
+            </div>
+          </div>
+        </div>
       </footer>
     </div>
   );
