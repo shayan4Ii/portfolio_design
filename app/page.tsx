@@ -1,8 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Mail, ExternalLink, Code, Palette, Zap, Users, ChevronDown, Menu, X, Github, Linkedin } from "lucide-react";
+import { Mail, Code, Palette, Zap, Users, ChevronDown, Menu, X, Github, Linkedin } from "lucide-react";
 import LoadingScreen from "./components/LoadingScreen";
 import BackgroundAnimation from "./components/BackgroundAnimation";
+import SkillCard from "./components/SkillCard";
+import ProjectCard from "./components/ProjectCard";
 
 export default function Home() {
   const [showLoading, setShowLoading] = useState(true);
@@ -148,29 +150,29 @@ export default function Home() {
         <div className="container mx-auto px-6 text-center">
           <div className="space-y-8">
             <div className="space-y-4">
-              <h1 className="text-5xl md:text-7xl font-bold text-gradient">
+              <h1 className="heading-xl text-gradient animate-float-up">
                 Shayan
               </h1>
-              <p className="text-xl md:text-2xl text-slate-300">
+              <p className="text-xl md:text-2xl text-slate-300 animate-slide-in-left" style={{animationDelay: '0.2s'}}>
                 Full Stack Developer & UI/UX Enthusiast
               </p>
             </div>
             
-            <p className="text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg-enhanced max-w-2xl mx-auto leading-relaxed animate-slide-in-right" style={{animationDelay: '0.4s'}}>
               Crafting digital experiences with modern technologies. 
               I specialize in creating scalable web applications and beautiful user interfaces.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in" style={{animationDelay: '0.6s'}}>
               <button
                 onClick={() => scrollToSection('projects')}
-                className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full hover:from-blue-600 hover:to-purple-700 transition-all duration-300 hover-lift"
+                className="btn-primary hover-lift"
               >
                 View My Work
               </button>
               <button
                 onClick={() => scrollToSection('contact')}
-                className="px-8 py-3 border border-blue-500 text-blue-400 rounded-full hover:bg-blue-500 hover:text-white transition-all duration-300"
+                className="btn-secondary"
               >
                 Get In Touch
               </button>
@@ -199,20 +201,20 @@ export default function Home() {
       <section id="about" className="section-padding bg-slate-900/50">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-gradient">
+            <h2 className="heading-lg text-center mb-16 text-gradient">
               About Me
             </h2>
             
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div className="space-y-6">
-                <p className="text-lg text-slate-300 leading-relaxed">
+                <p className="text-lg-enhanced leading-relaxed">
                   I'm a passionate full-stack developer with over 5 years of experience 
                   creating digital solutions that combine functionality with beautiful design. 
                   My journey in tech started with curiosity and has evolved into a love for 
                   building applications that make a difference.
                 </p>
                 
-                <p className="text-lg text-slate-300 leading-relaxed">
+                <p className="text-lg-enhanced leading-relaxed">
                   When I'm not coding, you'll find me exploring new technologies, 
                   contributing to open source projects, or sharing knowledge with the 
                   developer community. I believe in continuous learning and staying 
@@ -239,9 +241,10 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="relative">
-                <div className="aspect-square bg-gradient-to-br from-blue-500/20 to-purple-600/20 rounded-2xl flex items-center justify-center">
-                  <div className="text-6xl">👨‍💻</div>
+              <div className="relative group">
+                <div className="aspect-square bg-gradient-to-br from-blue-500/20 to-purple-600/20 rounded-2xl flex items-center justify-center hover-glow transition-all duration-500 group-hover:from-blue-500/30 group-hover:to-purple-600/30">
+                  <div className="text-6xl group-hover:scale-110 transition-transform duration-300">👨‍💻</div>
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500/10 to-purple-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
               </div>
             </div>
@@ -253,27 +256,13 @@ export default function Home() {
       <section id="skills" className="section-padding">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-gradient">
+            <h2 className="heading-lg text-center mb-16 text-gradient">
               Skills & Expertise
             </h2>
             
-            <div className="grid gap-8">
+            <div className="grid gap-6">
               {skills.map((skill, index) => (
-                <div key={skill.name} className="group">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-lg font-medium text-slate-300">{skill.name}</span>
-                    <span className="text-sm text-slate-400">{skill.level}%</span>
-                  </div>
-                  <div className="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
-                    <div 
-                      className={`h-full bg-gradient-to-r ${skill.color} rounded-full transition-all duration-1000 ease-out group-hover:animate-pulse`}
-                      style={{ 
-                        width: `${skill.level}%`,
-                        animationDelay: `${index * 0.2}s`
-                      }}
-                    />
-                  </div>
-                </div>
+                <SkillCard key={skill.name} skill={skill} index={index} />
               ))}
             </div>
           </div>
@@ -284,51 +273,13 @@ export default function Home() {
       <section id="projects" className="section-padding bg-slate-900/50">
         <div className="container mx-auto px-6">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-gradient">
+            <h2 className="heading-lg text-center mb-16 text-gradient">
               Featured Projects
             </h2>
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {projects.map((project) => (
-                <div key={project.title} className="group glass-effect rounded-xl overflow-hidden hover-lift">
-                  <div className="aspect-video bg-gradient-to-br from-blue-500/20 to-purple-600/20 flex items-center justify-center">
-                    <div className="text-4xl">🚀</div>
-                  </div>
-                  
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold mb-2 text-white group-hover:text-blue-400 transition-colors">
-                      {project.title}
-                    </h3>
-                    <p className="text-slate-400 mb-4 text-sm leading-relaxed">
-                      {project.description}
-                    </p>
-                    
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {project.tech.map((tech) => (
-                        <span key={tech} className="px-2 py-1 bg-slate-800 text-slate-300 rounded text-xs">
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-                    
-                    <div className="flex gap-3">
-                      <a 
-                        href={project.github}
-                        className="flex items-center gap-1 text-slate-400 hover:text-blue-400 transition-colors text-sm"
-                      >
-                        <Github size={16} />
-                        Code
-                      </a>
-                      <a 
-                        href={project.live}
-                        className="flex items-center gap-1 text-slate-400 hover:text-blue-400 transition-colors text-sm"
-                      >
-                        <ExternalLink size={16} />
-                        Live Demo
-                      </a>
-                    </div>
-                  </div>
-                </div>
+              {projects.map((project, index) => (
+                <ProjectCard key={project.title} project={project} index={index} />
               ))}
             </div>
           </div>
@@ -339,14 +290,14 @@ export default function Home() {
       <section id="contact" className="section-padding">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-gradient">
+            <h2 className="heading-lg text-center mb-16 text-gradient">
               Let's Work Together
             </h2>
             
             <div className="grid md:grid-cols-2 gap-12">
               <div className="space-y-6">
-                <h3 className="text-2xl font-bold text-white mb-4">Get in touch</h3>
-                <p className="text-slate-300 leading-relaxed">
+                <h3 className="heading-md text-white mb-4">Get in touch</h3>
+                <p className="text-lg-enhanced leading-relaxed">
                   I'm always interested in new opportunities and exciting projects. 
                   Whether you're a company looking to hire, or you're a fellow developer 
                   looking to collaborate, I'd love to hear from you.
@@ -407,7 +358,7 @@ export default function Home() {
                 
                 <button
                   type="submit"
-                  className="w-full px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 hover-lift"
+                  className="w-full btn-primary hover-lift animate-pulse-glow"
                 >
                   Send Message
                 </button>
