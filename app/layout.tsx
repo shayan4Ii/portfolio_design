@@ -12,7 +12,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-#test2
 
 export const metadata: Metadata = {
   title: "Shayan - Full Stack Developer",
